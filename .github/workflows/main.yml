@@ -1,0 +1,26 @@
+name: Integration testing execution
+on:
+  push:
+    branches: 
+      - feature/**
+
+jobs:
+  cypress-test-install:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Cypress tests run
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: ./
+          build: npm run test
+
+      - name: Upload Test results
+        if: (success() || failure()) 
+        uses: actions/upload-artifact@v3.1.2
+        with:
+          name: Test report
+          path: ./cypress/reports
+          retention-days: 1
