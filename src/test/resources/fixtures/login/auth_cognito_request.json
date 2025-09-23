@@ -1,0 +1,8 @@
+{
+    "AuthParameters" : {
+        "USERNAME" : "1152440509",
+        "PASSWORD" : "FlyPay1."
+    },
+    "AuthFlow" : "USER_PASSWORD_AUTH",
+    "ClientId" : "cbe0g38jud8n9ki01qntjk2mi"
+}

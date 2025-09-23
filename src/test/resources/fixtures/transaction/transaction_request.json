@@ -1,0 +1,11 @@
+{
+    "plate": "LAM000",
+    "amount": 10000,
+    "details": [
+        {
+            "amount": 10000,
+            "description": "Lavada"
+        }
+    ],
+    "vehicleType": "Automóvil"
+}
