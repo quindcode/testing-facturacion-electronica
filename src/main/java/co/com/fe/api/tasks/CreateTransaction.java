@@ -28,12 +28,9 @@ public class CreateTransaction implements Task {
         String requestBody = JsonFileReader.readJson(filePath);
         String idToken = actor.recall("idToken"); // Recupera el token del actor
 
-//        PrintStream requestLog = System.out; TODO eliminar
-
         actor.attemptsTo(
                 Post.to(Constants.BASE_URL + "transactions")
                         .with(request -> request
-//                                .filter(new RequestLoggingFilter(requestLog)) // <-- LÍNEA CLAVE TODO eliminar
                                 .header("authorization", idToken)
                                 .contentType(ContentType.JSON)
                                 .body(requestBody))

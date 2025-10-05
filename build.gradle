@@ -43,6 +43,7 @@ ext {
     lombokVersion = '1.18.30'
     log4jVersion = '2.21.1'
     restAssuredVersion = '5.4.0'
+    kafkaClientsVersion = '4.0.0'
 }
 
 dependencies {
@@ -70,6 +71,7 @@ dependencies {
     testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
     implementation group: 'com.github.javafaker', name: 'javafaker', version: '1.0.2'
+    implementation("org.apache.kafka:kafka-clients:${kafkaClientsVersion}")
 }
 
 test {

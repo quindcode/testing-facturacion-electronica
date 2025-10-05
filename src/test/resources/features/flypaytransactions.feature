@@ -4,6 +4,7 @@ Feature: Transacciones en Flypay
   Quiero utilizar los servicios de flypay
   Para realizar transacciones
 
+  @flypay
   Scenario: Crear una transacción exitosa
     Given "el empleado" obtiene el token de autenticación
     When crea una transacción con los datos del archivo "transaction/transaction_request.json"
