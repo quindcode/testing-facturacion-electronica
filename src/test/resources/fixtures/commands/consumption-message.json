@@ -1,0 +1,72 @@
+{
+  "header": {
+    "traceId": "c085ea5f-bd2e-4e11-b785-df78bde7dd8a",
+    "hash": "e9ad114918310f1974f810c884d31000"
+  },
+  "body": {
+    "commandName": "InvoiceCommand",
+    "commandTimestamp": "2025-10-06T15:57:45.490279971Z",
+    "domainEntity": "INVOICE",
+    "commandData": {
+      "correlationUniqueTransactionId": "un-trid-15",
+      "resolutionType": "CONSUMPTION",
+      "currencyCode": "COP",
+      "externalReferences": {
+        "accountId": "250015",
+        "subAccountId": "250015",
+        "attentionPointId": 5014,
+        "transactionId": "trid-15",
+        "uniqueTransactionId": "un-trid-15",
+        "rootUniqueTransactionId": "un-trid-15",
+        "externalReferenceId": "ext-refid-15",
+        "rootExternalreferenceId": "ext-refid-15",
+        "externalTransactionId": "ext-trid-15"
+      },
+      "invoiceData": {
+        "personType": "NATURAL",
+        "companyName": "quind.io",
+        "fullName": "CarlosE Camilo InvoiceE null",
+        "firstName": "CarlosE",
+        "secondName": "Camilo",
+        "firstLastName": "InvoiceE",
+        "secondLastName": null,
+        "country": "",
+        "city": "Medellin",
+        "address": "Centro, C50 Cra 10",
+        "documentType": "CC",
+        "documentNumber": "921715",
+        "checkDigit": "-7",
+        "telephone": "000000",
+        "email": "carlos.e@invoice.com",
+        "fiscalTypeOperation": "RESPONSIBLE,NO_RESPONSIBLE",
+        "taxObligation": "LARGE_CONTRIBUTOR, SELF_RETAINER, RETAINER_IVA, OTHER",
+        "taxPayer": false,
+        "selfRetainer": false,
+        "retainerIva": true,
+        "fiscalTypeOperationIsSimple": false,
+        "mandateInvoice": false,
+        "administrativeArea": "990"
+      },
+      "invoiceTotals": {
+        "itemsQuantity": 1,
+        "totalAmount": 15000,
+        "totalTaxes": 150.5,
+        "valueInLetters": "quince mil pesos"
+      },
+      "items": [
+        {
+          "description": "{\"transaction\":{\"type\":\"Movimiento de consumo de servicio\",\"date\":\"2025-10-06T11:45:56Z\",\"details\":{\"user_id\":150015,\"amount\":15000,\"currency\":\"COP\",\"plate\":\"JTM514\",\"attentionPoint\":{\"name\":\"Lavadero feik 2 y medio\",\"id\":5014}}}}",
+          "totalAmount": 15000,
+          "taxes": [
+            {
+              "type": null,
+              "name": "Iva 19%",
+              "percentage": 19,
+              "value": 150.5
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

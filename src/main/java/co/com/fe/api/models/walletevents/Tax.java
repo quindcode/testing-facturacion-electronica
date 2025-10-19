@@ -1,13 +1,12 @@
-package co.com.fe.api.models.invoicecommands;
+package co.com.fe.api.models.walletevents;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ItemTaxes {
-    private String type;
+public class Tax {
     private String name;
-    private Double percentage;
-    private Double value;
+    private int value;
+    private int percentage;
 }

@@ -46,9 +46,6 @@ public class TheMessageWithKey implements Question<Optional<String>> {
     public Optional<String> answeredBy(Actor actor) {
         ConnectToKafka kafkaAbility = ConnectToKafka.as(actor);
 
-        // Suscribirse al topic
-//        kafkaAbility.subscribeToTopic(topic);
-
         // Variable para guardar el mensaje encontrado
         final String[] foundMessage = {null};
 
@@ -58,6 +55,7 @@ public class TheMessageWithKey implements Question<Optional<String>> {
         boolean messageFound = WaitHelper.waitUntil(() -> {
             ConsumerRecords<String, String> records = kafkaAbility.getConsumer().poll(Duration.ofMillis(200));
 
+            boolean foundInThisPoll = false;
             for (ConsumerRecord<String, String> record : records) {
                 // Mostrar cada mensaje encontrado para debugging
                 System.out.println(String.format("  📨 Found message - Key: '%s', Value length: %d bytes",
@@ -68,11 +66,11 @@ public class TheMessageWithKey implements Question<Optional<String>> {
                 if (key.equals(record.key())) {
                     foundMessage[0] = record.value();
                     System.out.println("  ✅ Message with matching key found!");
-                    return true;
+                    foundInThisPoll = true;
                 }
             }
 
-            return false; // Continuar buscando
+            return foundInThisPoll;
         }, timeout, Duration.ofMillis(300));
 
         if (!messageFound) {

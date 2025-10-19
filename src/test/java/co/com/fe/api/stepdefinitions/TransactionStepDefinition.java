@@ -42,7 +42,7 @@ public class TransactionStepDefinition {
     @And("el cuerpo de la respuesta coincide con los datos esperados de la transacción")
     public void theResponseBodyMatchesTheExpectedTransactionData() {
         String expectedEmployeeId = "employee-1152440509";
-        String expectedPlate = "JTM000";
+        String expectedPlate = "JTM002";
         int expectedStatusId = 0;
 
         theActorInTheSpotlight().should(

@@ -1,0 +1,45 @@
+{
+  "header": {
+    "traceId": "e9ad114918310f1974f810c884d31000"
+  },
+  "body": {
+    "eventName": "ConsumptionDebitedEvent",
+    "eventTimestamp": "2025-06-06T20:18:46Z",
+    "domainEntity": "WALLET",
+    "eventData": {
+      "walletId": "250014",
+      "pocketId": "1",
+      "pocketName": "Global",
+      "transactionId": "trid-14",
+      "uniqueTransactionId": "un-trid-14",
+      "balance": 140000,
+      "currencyCode": "COP",
+      "movementDescription": "{\"transaction\":{\"type\":\"Movimiento de consumo de servicio\",\"date\":\"2025-10-06T11:45:56Z\",\"details\":{\"user_id\":150014,\"amount\":400,\"currency\":\"COP\",\"plate\":\"JTM514\",\"attentionPoint\":{\"name\":\"Lavadero feik 2 y medio\",\"id\":5014}}}}",
+      "transactionType": "CONSUMPTION",
+      "createdDate": "2025-10-06T20:18:46Z",
+      "externalReferenceId": "ext-refid-14",
+      "subAccountId": "250014",
+      "extendedAttributes": {
+        "serviceType": 0,
+        "readingType": 0,
+        "module": "E1",
+        "description": "Pago Prueba",
+        "appliedAgreement": "Descuento del 50% por compras en c.c.",
+        "origin": "PAYMENT_AUTHORIZER",
+        "taxes": [
+          {
+            "name": "Iva 19%",
+            "value": 500,
+            "percentage": 19
+          }
+        ]
+      },
+      "amount": 400,
+      "flyKey": "JTM514",
+      "flyKeyType": "PLATE",
+      "attentionPointId": 5012,
+      "consumptionType": 1,
+      "externalTransactionId": "ext-trid-14"
+    }
+  }
+}

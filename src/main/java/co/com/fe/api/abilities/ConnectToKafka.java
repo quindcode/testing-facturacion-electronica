@@ -20,7 +20,7 @@ import java.util.Properties;
 public class ConnectToKafka implements Ability, AutoCloseable {
 
     private Producer<String, String> producer;
-    private Consumer<String, String> consumer;
+    private static Consumer<String, String> consumer;
     private final Properties kafkaConfig;
 
     public ConnectToKafka() {
@@ -60,6 +60,8 @@ public class ConnectToKafka implements Ability, AutoCloseable {
             consumerProps.put("value.deserializer", StringDeserializer.class.getName());
             consumerProps.put("group.id", "test-group-" + System.currentTimeMillis());
             consumerProps.put("auto.offset.reset", "earliest");
+            consumerProps.put("enable.auto.commit", "false");
+
 
             consumer = new KafkaConsumer<>(consumerProps);
         }

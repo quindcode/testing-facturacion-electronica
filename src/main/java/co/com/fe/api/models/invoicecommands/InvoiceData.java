@@ -1,8 +1,10 @@
 package co.com.fe.api.models.invoicecommands;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class InvoiceData {
     private String personType; // "NATURAL || JURIDICA ",
     private String companyName; //Si es juridica",

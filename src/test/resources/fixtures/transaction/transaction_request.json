@@ -1,9 +1,9 @@
 {
-    "plate": "JTM000",
-    "amount": 5000,
+    "plate": "JTM002",
+    "amount": 2500,
     "details": [
         {
-            "amount": 5000,
+            "amount": 2500,
             "description": "Lavada"
         }
     ],
