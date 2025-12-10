@@ -11,7 +11,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WalletEvent {
-    private WalletEventHeader header;
-    private WalletEventBody body;
+public class WalletEventHeader {
+    private String traceId;
+    private String version;
+    private String hash;
 }

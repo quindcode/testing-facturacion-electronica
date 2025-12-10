@@ -1,15 +1,23 @@
 package co.com.fe.api.models.walletevents;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import co.com.fe.api.models.commandevents.Tax;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
-
+import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExtendedAttributes {
-    private int serviceType;
-    private int readingType;
+    private Integer serviceType;
+    private Integer readingType;
     private String module;
     private String description;
     private String appliedAgreement;

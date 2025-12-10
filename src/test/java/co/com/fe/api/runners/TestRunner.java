@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
         glue = {"co.com.fe.api.stepdefinitions", "co.com.fe.api.hook"},
         snippets = CucumberOptions.SnippetType.CAMELCASE,
         plugin = "pretty",
-        tags = "@smokeP"
+        tags = "@smoke"
 )
 public class TestRunner {
 }

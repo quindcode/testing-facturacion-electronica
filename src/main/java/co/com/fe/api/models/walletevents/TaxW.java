@@ -5,13 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import java.math.BigDecimal;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WalletEvent {
-    private WalletEventHeader header;
-    private WalletEventBody body;
+public class TaxW {
+    private String name;
+    private BigDecimal value;
+    private BigDecimal percentage;
 }

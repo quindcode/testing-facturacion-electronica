@@ -30,6 +30,10 @@ public class WaitForProcessing implements Task {
         return instrumented(WaitForProcessing.class, duration, "stream processing");
     }
 
+    public static WaitForProcessing forSeconds(int seconds) {
+        return instrumented(WaitForProcessing.class, Duration.ofSeconds(seconds), "stream processing");
+    }
+
     /**
      * Espera por defecto (5 segundos) para procesamiento de streams
      */

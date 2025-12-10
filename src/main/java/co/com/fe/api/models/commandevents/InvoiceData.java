@@ -1,4 +1,4 @@
-package co.com.fe.api.models.invoicecommands;
+package co.com.fe.api.models.commandevents;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

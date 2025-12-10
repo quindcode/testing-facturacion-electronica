@@ -1,13 +1,18 @@
 package co.com.fe.api.questions;
 
-import co.com.fe.api.models.invoicecommands.InvoiceCommand;
+import co.com.fe.api.models.commandevents.CommandEvent;
+import co.com.fe.api.models.commandevents.Tax;
 import co.com.fe.api.models.walletevents.WalletEvent;
-import co.com.fe.api.utils.AttributeGetter;
+import co.com.fe.api.utils.Utilities;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Question;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
+
 public class TheValuesFromWallet implements Question<Boolean> {
-    private InvoiceCommand command;
+    private CommandEvent command;
     private WalletEvent event;
 
     public TheValuesFromWallet(WalletEvent event){
@@ -18,28 +23,72 @@ public class TheValuesFromWallet implements Question<Boolean> {
         return new TheValuesFromWallet(event);
     }
 
-    public TheValuesFromWallet areIn(InvoiceCommand command){
+    public TheValuesFromWallet areIn(CommandEvent command){
         this.command = command;
         return this;
     }
 
     @Override
     public Boolean answeredBy(Actor actor) {
-        String walletId = String.valueOf(AttributeGetter.getValueFromWalletEvent(event, "walletId"));
-        String subAccountId = String.valueOf(AttributeGetter.getValueFromInvoiceCommand(command, "subAccountId"));
+        var eventData = event.getBody().getEventData();
+        var eventAttrs = eventData.getExtendedAttributes();
 
-        Double amount = (Double) AttributeGetter.getValueFromWalletEvent(event, "amount");
-        Double totalAmount = (Double) AttributeGetter.getValueFromInvoiceCommand(command, "totalAmount");
+        List<Tax> eventTaxes = (eventAttrs != null) ? eventAttrs.getTaxes() : null;
 
-        String externalTransactionIdFromEvent = String.valueOf(AttributeGetter.getValueFromWalletEvent(event, "externalTransactionId"));
-        String externalTransactionIdFromCommand = String.valueOf(AttributeGetter.getValueFromInvoiceCommand(command, "externalTransactionId"));
+        var commandData = command.getBody().getCommandData();
+        var commandExtRef = commandData.getExternalReferences();
+        var commandTotals = commandData.getInvoiceTotals();
 
-        boolean walletMatches = walletId != null && walletId.equals(subAccountId);
-        boolean amountMatches = amount != null && amount.equals(totalAmount);
-        boolean transactionIdMatches = externalTransactionIdFromEvent != null && externalTransactionIdFromEvent.equals(externalTransactionIdFromCommand);
-        System.out.println("walletMatches: " + walletMatches + ", amountMatches: " + amountMatches +
-                ", transactionIdMatches: " + transactionIdMatches);
+        List<co.com.fe.api.models.commandevents.Tax> commandTaxes = null;
+        if (commandData.getItems() != null && !commandData.getItems().isEmpty() && commandData.getItems().getFirst() != null) {
+            commandTaxes = commandData.getItems().getFirst().getTaxes();
+        }
 
-        return walletMatches && amountMatches && transactionIdMatches;
+        boolean subAccountIdMatches = Objects.equals(
+                eventData.getSubAccountId(),
+                commandExtRef.getSubAccountId()
+        );
+        System.out.println(subAccountIdMatches);
+
+        boolean uniqueIdMatches = Objects.equals(
+                eventData.getUniqueTransactionId(),
+                commandData.getUniqueTransactionId()
+        );
+        System.out.println(uniqueIdMatches);
+
+        boolean transactionIdMatches = Objects.equals(
+                eventData.getTransactionId(),
+                commandExtRef.getTransactionId()
+        );
+        System.out.println(transactionIdMatches);
+
+        boolean amountMatches = Objects.equals(
+                eventData.getAmount(),
+                commandTotals.getTotalAmount()
+        );
+        System.out.println(eventData.getAmount() + " " + commandTotals.getTotalAmount());
+        System.out.println(amountMatches);
+
+        boolean subTotalMatches = Objects.equals(
+                Utilities.getSubtotalFromWallet(eventData),
+                commandData.getItems().getFirst().getSubTotalAmount()
+        );
+        System.out.println(Utilities.getSubtotalFromWallet(eventData)+ " " + commandData.getItems().getFirst().getSubTotalAmount());
+        System.out.println(subTotalMatches);
+
+        boolean taxesMatch = Utilities.compareTaxLists(eventTaxes, commandTaxes);
+
+        System.out.println(eventTaxes.toString());
+        System.out.println(commandTaxes.toString());
+        System.out.println(taxesMatch);
+
+        return Stream.of(
+                subAccountIdMatches,
+                uniqueIdMatches,
+                transactionIdMatches,
+                amountMatches,
+                subTotalMatches,
+                taxesMatch
+        ).allMatch(Boolean::booleanValue);
     }
 }

@@ -20,7 +20,7 @@ import java.util.Properties;
 public class ConnectToKafka implements Ability, AutoCloseable {
 
     private Producer<String, String> producer;
-    private static Consumer<String, String> consumer;
+    private Consumer<String, String> consumer;
     private final Properties kafkaConfig;
 
     public ConnectToKafka() {

@@ -1,4 +1,4 @@
-package co.com.fe.api.models.walletevents;
+package co.com.fe.api.models.commandevents;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WalletEvent {
-    private WalletEventHeader header;
-    private WalletEventBody body;
+public class CommandBody {
+    private String commandName;
+    private String commandTimestamp;
+    private String domainEntity;
+    private CommandData commandData;
 }

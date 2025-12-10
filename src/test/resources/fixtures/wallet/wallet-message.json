@@ -1,45 +1,47 @@
 {
   "header": {
-    "traceId": "e9ad114918310f1974f810c884d31000"
+    "traceId": "79aa86d46d5ddff6bcc0f107d30e15f3",
+    "version": "1#2025-10-31T22:15:27Z#22",
+    "hash": "b31f81d5efbed90c94844189ad7a8b34dae996b243b6f0d9645684f8d16262d2"
   },
   "body": {
     "eventName": "ConsumptionDebitedEvent",
-    "eventTimestamp": "2025-06-06T20:18:46Z",
+    "eventTimestamp": "2025-10-31T22:15:27Z",
     "domainEntity": "WALLET",
     "eventData": {
-      "walletId": "250014",
+      "walletId": "40312",
       "pocketId": "1",
       "pocketName": "Global",
-      "transactionId": "trid-14",
-      "uniqueTransactionId": "un-trid-14",
-      "balance": 140000,
+      "transactionId": "abcdef13-ec06-467d-9cbe-812a0ac5bb1c",
+      "uniqueTransactionId": "prueba-autom-001",
+      "balance": 50000,
       "currencyCode": "COP",
-      "movementDescription": "{\"transaction\":{\"type\":\"Movimiento de consumo de servicio\",\"date\":\"2025-10-06T11:45:56Z\",\"details\":{\"user_id\":150014,\"amount\":400,\"currency\":\"COP\",\"plate\":\"JTM514\",\"attentionPoint\":{\"name\":\"Lavadero feik 2 y medio\",\"id\":5014}}}}",
+      "movementDescription": "{\"transaction\":{\"type\":\"Movimiento de consumo de servicio\",\"date\":\"2025-10-31T22:15:25Z\",\"details\":{\"user_id\":40312,\"amount\":\"10000.0\",\"currency\":\"COP\",\"plate\":\"JTM005\",\"attentionPoint\":{\"name\":\"C.C. UNICENTRO MEDELLIN KC\",\"id\":262}}}}",
       "transactionType": "CONSUMPTION",
-      "createdDate": "2025-10-06T20:18:46Z",
-      "externalReferenceId": "ext-refid-14",
-      "subAccountId": "250014",
+      "createdDate": "2025-10-30T22:15:25Z",
+      "externalReferenceId": "abcdef13-ec06-467d-9cbe-812a0ac5bb1c",
+      "subAccountId": "40312",
       "extendedAttributes": {
         "serviceType": 0,
         "readingType": 0,
         "module": "E1",
-        "description": "Pago Prueba",
-        "appliedAgreement": "Descuento del 50% por compras en c.c.",
+        "description": "pago tarifa",
+        "appliedAgreement": "compras en c.c.",
         "origin": "PAYMENT_AUTHORIZER",
         "taxes": [
           {
             "name": "Iva 19%",
-            "value": 500,
+            "value": 1596.64,
             "percentage": 19
           }
         ]
       },
-      "amount": 400,
-      "flyKey": "JTM514",
+      "amount": 10000,
+      "flyKey": "JTM005",
       "flyKeyType": "PLATE",
-      "attentionPointId": 5012,
+      "attentionPointId": 262,
       "consumptionType": 1,
-      "externalTransactionId": "ext-trid-14"
+      "externalTransactionId": "abcdef13-ec06-467d-9cbe-812a0ac5bb1c"
     }
   }
 }
