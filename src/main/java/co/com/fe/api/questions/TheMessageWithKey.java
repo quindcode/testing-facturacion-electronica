@@ -1,7 +1,7 @@
 package co.com.fe.api.questions;
 
 import co.com.fe.api.abilities.ConnectToKafka;
-import co.com.fe.api.utils.JsonToClassConverter;
+import co.com.fe.api.utils.JsonConverter;
 import co.com.fe.api.utils.WaitHelper;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Question;
@@ -86,6 +86,6 @@ public class TheMessageWithKey<T> implements Question<T> {
             return (T) foundMessage[0];
         }
 
-        return JsonToClassConverter.fromJson(foundMessage[0], targetClass);
+        return JsonConverter.fromJsonString(foundMessage[0], targetClass);
     }
 }

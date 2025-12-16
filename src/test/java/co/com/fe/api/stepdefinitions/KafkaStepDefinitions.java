@@ -1,13 +1,15 @@
 package co.com.fe.api.stepdefinitions;
 
+import co.com.fe.api.assertions.WalletVsCommandVerifier;
 import co.com.fe.api.models.commandevents.CommandEvent;
 import co.com.fe.api.models.walletevents.WalletEvent;
 import co.com.fe.api.questions.*;
+import co.com.fe.api.tasks.PrepareKafkaListener;
 import co.com.fe.api.tasks.PublishMessage;
 import co.com.fe.api.tasks.SubscribeToKafkaTopic;
 import co.com.fe.api.tasks.WaitForProcessing;
-import co.com.fe.api.utils.ConvertStringToModel;
-import co.com.fe.api.utils.JsonFileReader;
+import co.com.fe.api.utils.JsonConverter;
+import co.com.fe.api.utils.WalletEventBuilder;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -16,7 +18,6 @@ import net.serenitybdd.screenplay.actors.OnStage;
 import java.time.Duration;
 
 import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
-import static org.hamcrest.core.Is.is;
 
 public class KafkaStepDefinitions {
 
@@ -29,27 +30,19 @@ public class KafkaStepDefinitions {
         System.out.println("✅ Actor 'KafkaListener' connected to Kafka");
     }
 
-    @When("I listen for a message with key {string} in topic {string}")
-    public void iListenForAMessageWithKeyInTopic(String key, String topic) {
-        System.out.println("Do nothing, SKIP!");
-    }
-
     @When("I send a message to topic {string} with key {string}")
     public void iSendAMessageWithKeyToTopic(String topic, String key){
-        String message = JsonFileReader.readJson("wallet/wallet-message.json");
-        if(!message.isEmpty())
-        {
-            System.out.println(message.substring(0,300));
-        }else {
-            System.out.println("No message");
-        }
+        WalletEvent event = WalletEventBuilder.random().build();
+        String payloadMessage = JsonConverter.toString(event);
+
         System.out.println("Sending mesage...");
 
         OnStage.theActorInTheSpotlight().attemptsTo(
-                PublishMessage.to(topic).withKey(key).withPayload(message)
+                PublishMessage.to(topic).withKey(key).withPayload(payloadMessage)
         );
-        OnStage.theActorInTheSpotlight().remember("event", ConvertStringToModel.convertToWalletEvent(message));
+        OnStage.theActorInTheSpotlight().remember("event", event);
         OnStage.theActorInTheSpotlight().remember("subAccountId", key);
+        OnStage.theActorInTheSpotlight().remember("uniqueTransactionId", event.getBody().getEventData().getUniqueTransactionId());
     }
 
     @When("I wait {int} seconds for the event to process")
@@ -60,7 +53,7 @@ public class KafkaStepDefinitions {
     }
 
     @Then("I should see a message with key {string} in topic {string} with the corresponding information")
-    public void iShouldSeeAMessageWithKeyInTopic(String key, String topic) {
+    public void iShouldSeeAMessageWithKeyInTopicWithInformation(String key, String topic) {
 
         CommandEvent receivedCommand = OnStage.theActorInTheSpotlight().asksFor(
                 TheMessageWithKey.inTopic(topic, key)
@@ -73,5 +66,24 @@ public class KafkaStepDefinitions {
         OnStage.theActorInTheSpotlight().should(
                 seeThat(TheValuesFromWallet.of(walletEvent).areIn(receivedCommand))
         );
+    }
+
+    @Given("I am prepared to listen the topic {string}")
+    public void iAmPreparedToListenTheTopic(String topic) {
+        OnStage.theActorInTheSpotlight().attemptsTo(
+                PrepareKafkaListener.onTopic(topic)
+        );
+    }
+
+    @Then("I should see a message with uniqueId {string} in topic {string}")
+    public void iShouldSeeAMessageWithUniqueIdInTopic(String uniqueId, String topic) {
+        CommandEvent receivedCommand = OnStage.theActorInTheSpotlight().asksFor(
+                TheMessageWithUniqueId.inTopic(topic, uniqueId)
+                            .ofClass(CommandEvent.class)
+        );
+
+        WalletEvent originalEvent = OnStage.theActorInTheSpotlight().recall("event");
+
+        WalletVsCommandVerifier.assertMatch(originalEvent, receivedCommand);
     }
 }

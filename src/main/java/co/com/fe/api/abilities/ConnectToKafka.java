@@ -19,7 +19,7 @@ import java.util.Properties;
  */
 public class ConnectToKafka implements Ability, AutoCloseable {
 
-    private Producer<String, String> producer;
+    private static Producer<String, String> sharedProducer;
     private Consumer<String, String> consumer;
     private final Properties kafkaConfig;
 
@@ -37,16 +37,23 @@ public class ConnectToKafka implements Ability, AutoCloseable {
     /**
      * Obtiene un productor de Kafka. Si no existe, lo crea.
      */
-    public Producer<String, String> getProducer() {
-        if (producer == null) {
+    public synchronized Producer<String, String> getProducer() {
+        if (sharedProducer == null) {
             Properties producerProps = new Properties();
             producerProps.putAll(kafkaConfig);
             producerProps.put("key.serializer", StringSerializer.class.getName());
             producerProps.put("value.serializer", StringSerializer.class.getName());
+            producerProps.put("acks", "all");
+            producerProps.put("linger.ms", 1);
 
-            producer = new KafkaProducer<>(producerProps);
+            sharedProducer = new KafkaProducer<>(producerProps);
+
+            // Hook para cerrar el producer al apagar la JVM (fin de toda la suite)
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                if (sharedProducer != null) sharedProducer.close();
+            }));
         }
-        return producer;
+        return sharedProducer;
     }
 
     /**
@@ -58,9 +65,10 @@ public class ConnectToKafka implements Ability, AutoCloseable {
             consumerProps.putAll(kafkaConfig);
             consumerProps.put("key.deserializer", StringDeserializer.class.getName());
             consumerProps.put("value.deserializer", StringDeserializer.class.getName());
-            consumerProps.put("group.id", "test-group-" + System.currentTimeMillis());
-            consumerProps.put("auto.offset.reset", "earliest");
+            consumerProps.put("group.id", "serenity-automation-worker");
+            consumerProps.put("auto.offset.reset", "latest");
             consumerProps.put("enable.auto.commit", "false");
+            consumerProps.put("default.api.timeout.ms", "60000");
 
 
             consumer = new KafkaConsumer<>(consumerProps);
@@ -80,11 +88,8 @@ public class ConnectToKafka implements Ability, AutoCloseable {
      */
     @Override
     public void close() {
-        if (producer != null) {
-            producer.close(Duration.ofSeconds(5));
-        }
         if (consumer != null) {
-            consumer.close(Duration.ofSeconds(5));
+            consumer.close(Duration.ofSeconds(3));
         }
     }
 }

@@ -19,9 +19,9 @@ public class PublishMessage implements Task {
 
     private final String topic;
     private final String key;
-    private final Object message;
+    private final String message;
 
-    public PublishMessage(String topic, String key, Object message) {
+    public PublishMessage(String topic, String key, String message) {
         this.topic = topic;
         this.key = key;
         this.message = message;
@@ -44,7 +44,7 @@ public class PublishMessage implements Task {
     /**
      * Especifica el contenido del mensaje
      */
-    public PublishMessage withPayload(Object payload) {
+    public PublishMessage withPayload(String payload) {
         return instrumented(PublishMessage.class, topic, key, payload);
     }
 
@@ -56,7 +56,7 @@ public class PublishMessage implements Task {
     public <T extends Actor> void performAs(T actor) {
         ConnectToKafka kafkaAbility = ConnectToKafka.as(actor);
 
-        ProducerRecord<String, String> recordToPublish = new ProducerRecord<>(topic, key, (String)message);
+        ProducerRecord<String, String> recordToPublish = new ProducerRecord<>(topic, key, message);
 
         try {
             // Enviar el mensaje y esperar confirmación

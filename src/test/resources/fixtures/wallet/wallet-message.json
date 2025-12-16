@@ -13,7 +13,7 @@
       "pocketId": "1",
       "pocketName": "Global",
       "transactionId": "abcdef13-ec06-467d-9cbe-812a0ac5bb1c",
-      "uniqueTransactionId": "prueba-autom-001",
+      "uniqueTransactionId": "prueba-autom-005",
       "balance": 50000,
       "currencyCode": "COP",
       "movementDescription": "{\"transaction\":{\"type\":\"Movimiento de consumo de servicio\",\"date\":\"2025-10-31T22:15:25Z\",\"details\":{\"user_id\":40312,\"amount\":\"10000.0\",\"currency\":\"COP\",\"plate\":\"JTM005\",\"attentionPoint\":{\"name\":\"C.C. UNICENTRO MEDELLIN KC\",\"id\":262}}}}",
