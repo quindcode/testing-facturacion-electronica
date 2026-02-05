@@ -1,4 +1,4 @@
-package co.com.fe.api.models.commandevents;
+package co.com.fe.api.models.kafka.commandevents;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,8 +11,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CommandHeader {
-    private String traceId;
-    private String hash;
-    private String version;
+public class CommandBody {
+    private String commandName;
+    private String commandTimestamp;
+    private String domainEntity;
+    private CommandData commandData;
 }

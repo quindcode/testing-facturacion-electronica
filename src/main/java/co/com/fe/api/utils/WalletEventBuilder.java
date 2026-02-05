@@ -1,9 +1,9 @@
 package co.com.fe.api.utils;
 
-import co.com.fe.api.models.commandevents.Tax;
-import co.com.fe.api.models.walletevents.EventData;
-import co.com.fe.api.models.walletevents.ExtendedAttributes;
-import co.com.fe.api.models.walletevents.WalletEvent;
+import co.com.fe.api.models.kafka.commandevents.Tax;
+import co.com.fe.api.models.kafka.walletevents.EventData;
+import co.com.fe.api.models.kafka.walletevents.ExtendedAttributes;
+import co.com.fe.api.models.kafka.walletevents.WalletEvent;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -12,7 +12,6 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class WalletEventBuilder {
 

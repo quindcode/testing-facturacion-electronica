@@ -1,6 +1,6 @@
 Feature: Read postgresql database
 
-#  @e2e
+  @e2e
   Scenario: Billing for service consumption
     Given I send a message to topic "flypass_payments.wallet.events" with key "40312"
     When I wait 3 seconds for the event to process

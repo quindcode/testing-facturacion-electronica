@@ -1,6 +1,5 @@
-package co.com.fe.api.models.commandevents;
+package co.com.fe.api.models.kafka.commandevents;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,10 +12,10 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class Tax {
-    private String type;
-    private String name;
-    private BigDecimal percentage;
-    private BigDecimal value;
+public class InvoiceTotals {
+    private Integer itemsQuantity;
+    private BigDecimal subtotalAmount;
+    private BigDecimal totalTaxes;
+    private BigDecimal totalAmount;
+    private String valueInLetters;
 }

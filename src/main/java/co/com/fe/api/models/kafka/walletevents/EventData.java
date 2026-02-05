@@ -1,4 +1,4 @@
-package co.com.fe.api.models.walletevents;
+package co.com.fe.api.models.kafka.walletevents;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

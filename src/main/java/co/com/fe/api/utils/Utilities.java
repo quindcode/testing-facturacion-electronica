@@ -1,13 +1,17 @@
 package co.com.fe.api.utils;
 
-import co.com.fe.api.models.commandevents.Tax;
-import co.com.fe.api.models.walletevents.EventData;
+import co.com.fe.api.models.kafka.commandevents.Tax;
+import co.com.fe.api.models.kafka.walletevents.EventData;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
 public class Utilities {
+
+    private Utilities() {
+    }
+
     public static boolean compareTaxLists(List<Tax> eventTaxes, List<Tax> commandTaxes) {
 
         boolean eventTaxesEmpty = (eventTaxes == null || eventTaxes.isEmpty());

@@ -1,6 +1,6 @@
-package co.com.fe.api.models.walletevents;
+package co.com.fe.api.models.kafka.walletevents;
 
-import co.com.fe.api.models.commandevents.Tax;
+import co.com.fe.api.models.kafka.commandevents.Tax;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

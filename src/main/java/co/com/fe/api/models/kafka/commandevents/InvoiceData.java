@@ -1,4 +1,4 @@
-package co.com.fe.api.models.commandevents;
+package co.com.fe.api.models.kafka.commandevents;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

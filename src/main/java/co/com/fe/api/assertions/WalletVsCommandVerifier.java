@@ -1,8 +1,8 @@
 package co.com.fe.api.assertions;
 
-import co.com.fe.api.models.commandevents.CommandEvent;
-import co.com.fe.api.models.commandevents.Tax;
-import co.com.fe.api.models.walletevents.WalletEvent;
+import co.com.fe.api.models.kafka.commandevents.CommandEvent;
+import co.com.fe.api.models.kafka.commandevents.Tax;
+import co.com.fe.api.models.kafka.walletevents.WalletEvent;
 import org.assertj.core.api.SoftAssertions;
 
 import java.math.BigDecimal;

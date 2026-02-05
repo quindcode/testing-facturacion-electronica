@@ -18,15 +18,12 @@ public class DBStepDefinitions {
 
     @Then("I can see the invoice in billing database with status {string} or {string}")
     public void iCanSeeTheInvoiceInBillingDatabaseWithStatusOr(String status1, String status2) {
-        String subAccountId = OnStage.theActorInTheSpotlight().recall("subAccountId").toString();
+        String uniqueTransactionId = OnStage.theActorInTheSpotlight().recall("uniqueTransactionId");
 
         OnStage.theActorInTheSpotlight().should(
                 seeThat("el estado de la factura",
-                        actor -> LastInvoiceRecord.withSubAccountId(subAccountId)
-                                .answeredBy(actor)
-                                .getStatus(),
-
-                        is(oneOf(status1, status2))
+                        LastInvoiceRecord.withUniqueTransactionId(uniqueTransactionId),
+                        hasProperty("status", is(oneOf(status1,status2)))
                 )
         );
     }

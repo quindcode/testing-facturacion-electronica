@@ -1,4 +1,4 @@
-package co.com.fe.api.models.walletevents;
+package co.com.fe.api.models.kafka.walletevents;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class WalletEvent {
-    private WalletEventHeader header;
-    private WalletEventBody body;
+public class WalletEventHeader {
+    private String traceId;
+    private String version;
+    private String hash;
 }
