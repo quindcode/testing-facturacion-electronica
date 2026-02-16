@@ -1,0 +1,299 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "InvoiceCommandResponse",
+  "type": "object",
+  "required": ["header", "body"],
+  "properties": {
+    "header": {
+      "type": "object",
+      "required": ["traceId", "hash", "version"],
+      "properties": {
+        "traceId": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "body": {
+      "type": "object",
+      "required": [
+        "commandName",
+        "commandTimestamp",
+        "domainEntity",
+        "commandData"
+      ],
+      "properties": {
+        "commandName": {
+          "type": "string"
+        },
+        "commandTimestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "domainEntity": {
+          "type": "string"
+        },
+        "commandData": {
+          "type": "object",
+          "required": [
+            "uniqueTransactionId",
+            "rootType",
+            "aggregateRootId",
+            "currencyCode",
+            "appliedDate",
+            "externalReferences",
+            "invoiceRecipient",
+            "invoiceTotals",
+            "items"
+          ],
+          "properties": {
+            "uniqueTransactionId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "rootType": {
+              "type": "string"
+            },
+            "aggregateRootId": {
+              "type": "string"
+            },
+            "currencyCode": {
+              "type": "string",
+              "minLength": 3,
+              "maxLength": 3
+            },
+            "appliedDate": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "externalReferences": {
+              "type": "object",
+              "required": [
+                "accountId",
+                "subAccountId",
+                "attentionPointId",
+                "transactionId",
+                "externalReferenceId",
+                "externalTransactionId"
+              ],
+              "properties": {
+                "accountId": {
+                  "type": "string"
+                },
+                "subAccountId": {
+                  "type": "string"
+                },
+                "flyKey": {
+                  "type": ["string", "null"]
+                },
+                "flyKeyType": {
+                  "type": ["string", "null"]
+                },
+                "attentionPointId": {
+                  "type": "integer"
+                },
+                "transactionId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "externalReferenceId": {
+                  "type": "string"
+                },
+                "externalTransactionId": {
+                  "type": "string"
+                }
+              }
+            },
+            "invoiceRecipient": {
+              "type": "object",
+              "required": [
+                "personType",
+                "companyName",
+                "fullName",
+                "firstName",
+                "firstLastName",
+                "secondLastName",
+                "countryName",
+                "countryCode",
+                "city",
+                "address",
+                "documentType",
+                "documentNumber",
+                "telephone",
+                "email",
+                "fiscalTypeOperation",
+                "taxPayer",
+                "selfRetainer",
+                "retainerIva",
+                "fiscalTypeOperationIsSimple",
+                "mandateInvoice"
+              ],
+              "properties": {
+                "personType": {
+                  "type": "string"
+                },
+                "companyName": {
+                  "type": "string"
+                },
+                "fullName": {
+                  "type": "string"
+                },
+                "firstName": {
+                  "type": "string"
+                },
+                "secondName": {
+                  "type": "string"
+                },
+                "firstLastName": {
+                  "type": "string"
+                },
+                "secondLastName": {
+                  "type": "string"
+                },
+                "countryName": {
+                  "type": "string"
+                },
+                "countryCode": {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 2
+                },
+                "countrySubentity": {
+                  "type": "string"
+                },
+                "city": {
+                  "type": "string"
+                },
+                "address": {
+                  "type": "string"
+                },
+                "documentType": {
+                  "type": "string"
+                },
+                "documentNumber": {
+                  "type": "string"
+                },
+                "checkDigit": {
+                  "type": "string"
+                },
+                "telephone": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email"
+                },
+                "fiscalTypeOperation": {
+                  "type": "string"
+                },
+                "taxObligation": {
+                  "type": "string"
+                },
+                "taxPayer": {
+                  "type": "boolean"
+                },
+                "selfRetainer": {
+                  "type": "boolean"
+                },
+                "retainerIva": {
+                  "type": "boolean"
+                },
+                "fiscalTypeOperationIsSimple": {
+                  "type": "boolean"
+                },
+                "mandateInvoice": {
+                  "type": "boolean"
+                },
+                "administrativeArea": {
+                  "type": ["string", "null"]
+                }
+              }
+            },
+            "invoiceTotals": {
+              "type": "object",
+              "required": [
+                "itemsQuantity",
+                "subtotalAmount",
+                "totalTaxes",
+                "totalAmount",
+                "valueInLetters"
+              ],
+              "properties": {
+                "itemsQuantity": {
+                  "type": "integer"
+                },
+                "subtotalAmount": {
+                  "type": "number"
+                },
+                "totalTaxes": {
+                  "type": "number"
+                },
+                "totalAmount": {
+                  "type": "number"
+                },
+                "valueInLetters": {
+                  "type": "string"
+                }
+              }
+            },
+            "items": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": [
+                  "description",
+                  "subTotalAmount",
+                  "totalAmount",
+                  "taxes"
+                ],
+                "properties": {
+                  "description": {
+                    "type": "string"
+                  },
+                  "subTotalAmount": {
+                    "type": "number"
+                  },
+                  "totalAmount": {
+                    "type": "number"
+                  },
+                  "taxes": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "type",
+                        "name",
+                        "percentage",
+                        "value"
+                      ],
+                      "properties": {
+                        "type": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "percentage": {
+                          "type": "number"
+                        },
+                        "value": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
