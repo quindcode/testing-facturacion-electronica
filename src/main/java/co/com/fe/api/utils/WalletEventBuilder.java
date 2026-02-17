@@ -28,10 +28,12 @@ public class WalletEventBuilder {
     private String eventTimestamp;
 
     private String walletId = "40312";
+    private String subAccountId = "123456";
     private String flyKey = "JTM005";
 
     private WalletEventBuilder() {
-        this.event = JsonConverter.fromJsonString(JsonFileReader.readJson("wallet/wallet-message.json"), WalletEvent.class);
+        this.event = JsonConverter.fromJsonString(JsonFileReader.readJson("wallet/wallet-message.json"),
+                WalletEvent.class);
 
         this.uniqueTransactionId = UUID.randomUUID().toString();
         this.transactionId = UUID.randomUUID().toString();
@@ -39,8 +41,9 @@ public class WalletEventBuilder {
         this.externalReferenceId = UUID.randomUUID().toString();
 
         // Genera un monto aleatorio entre 10.000 y 100.000
-//        double randomAmount = ThreadLocalRandom.current().nextDouble(10000, 100000);
-//        this.amount = BigDecimal.valueOf(randomAmount).setScale(2, RoundingMode.HALF_UP);
+        // double randomAmount = ThreadLocalRandom.current().nextDouble(10000, 100000);
+        // this.amount = BigDecimal.valueOf(randomAmount).setScale(2,
+        // RoundingMode.HALF_UP);
 
         this.taxPercentage = BigDecimal.valueOf(19); // 19% por defecto
 
@@ -49,6 +52,13 @@ public class WalletEventBuilder {
 
     public static WalletEventBuilder random() {
         return new WalletEventBuilder();
+    }
+
+    public static WalletEventBuilder basedOnUser(UserTestContext user) {
+        return new WalletEventBuilder()
+                .withSubAccountId(user.getSubAccountId().toString())
+                .withWalletId(user.getSubAccountId().toString())
+                .withFlyKey(user.getPlate());
     }
 
     public WalletEventBuilder withUniqueTransactionId(String id) {
@@ -91,6 +101,16 @@ public class WalletEventBuilder {
         return this;
     }
 
+    public WalletEventBuilder withSubAccountId(String subAccountId) {
+        this.subAccountId = subAccountId;
+        return this;
+    }
+
+    public WalletEventBuilder withFlyKey(String flyKey) {
+        this.flyKey = flyKey;
+        return this;
+    }
+
     public WalletEvent build() {
         BigDecimal divisor = BigDecimal.valueOf(100).add(taxPercentage);
         BigDecimal taxValue = amount.multiply(taxPercentage).divide(divisor, 2, RoundingMode.HALF_EVEN);
@@ -105,13 +125,14 @@ public class WalletEventBuilder {
 
         EventData eventData = this.event.getBody().getEventData();
         eventData.setWalletId(this.walletId);
+        eventData.setSubAccountId(this.subAccountId);
         eventData.setAmount(this.amount);
 
         eventData.setUniqueTransactionId(this.uniqueTransactionId);
         eventData.setTransactionId(this.transactionId);
         eventData.setExternalTransactionId(this.externalTransactionId);
         eventData.setExternalReferenceId(this.externalReferenceId);
-        if(this.rootUniqueTransactionId != null){
+        if (this.rootUniqueTransactionId != null) {
             eventData.setRootUniqueTransactionId(this.rootUniqueTransactionId);
         }
 

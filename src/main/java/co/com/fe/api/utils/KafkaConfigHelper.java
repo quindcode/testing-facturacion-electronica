@@ -1,15 +1,15 @@
 package co.com.fe.api.utils;
+
 import io.github.cdimascio.dotenv.Dotenv;
 
 import java.util.Properties;
 
 /**
  * Helper para configurar las propiedades de conexión a Kafka
- * En el futuro, estas propiedades vendrán de un archivo .env
  */
 public class KafkaConfigHelper {
 
-    private static final Dotenv dotenv = Dotenv.load();
+    private static final Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
     private static final String KAFKA_BROKERS = dotenv.get("KAFKA_BROKERS");
     private static final String KAFKA_TLS_ENABLED = dotenv.get("KAFKA_TLS_ENABLED");
     private static final String KAFKA_SASL_ENABLED = dotenv.get("KAFKA_SASL_ENABLED");
@@ -35,7 +35,7 @@ public class KafkaConfigHelper {
             props.put("sasl.mechanism", KAFKA_SASL_MECHANISM);
             props.put("sasl.jaas.config",
                     String.format("org.apache.kafka.common.security.scram.ScramLoginModule required " +
-                                    "username=\"%s\" password=\"%s\";",
+                            "username=\"%s\" password=\"%s\";",
                             KAFKA_SASL_USERNAME, KAFKA_SASL_PASSWORD));
         }
 

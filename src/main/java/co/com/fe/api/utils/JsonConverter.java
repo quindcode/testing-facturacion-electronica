@@ -9,9 +9,13 @@ import java.io.IOException;
 
 public class JsonConverter {
     private static final ObjectMapper MAPPER = new ObjectMapper()
-//            .registerModule(new JavaTimeModule())
-            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS) // Para que las fechas se vean como ISO-8601 (String) y no números
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .setSerializationInclusion(JsonInclude.Include.NON_NULL)
+            .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+    private static final ObjectMapper MAPPER_WITH_NULLS = new ObjectMapper()
+            .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+            .setSerializationInclusion(JsonInclude.Include.ALWAYS)
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
     private JsonConverter() {}
@@ -32,14 +36,25 @@ public class JsonConverter {
     }
 
     /**
-     * Convierte un Objeto DTO Java a un String con el JSON de los datos
+     * Convierte un Objeto DTO Java a un String con el JSON de los datos (Excluye nulos por defecto)
      * @param object El objeto a convertir
      * @return El string del objeto
      */
     public static String toString(Object object) {
+        return toString(object, false);
+    }
+
+    /**
+     * Convierte un Objeto DTO Java a un String con el JSON de los datos permitiendo incluir nulos
+     * @param object El objeto a convertir
+     * @param includeNulls true para incluir "field": null, false para omitirlos
+     * @return El string del objeto
+     */
+    public static String toString(Object object, boolean includeNulls) {
         if (object == null) return null;
         try {
-            return MAPPER.writeValueAsString(object);
+            ObjectMapper mapper = includeNulls ? MAPPER_WITH_NULLS : MAPPER;
+            return mapper.writeValueAsString(object);
         } catch (IOException e) {
             throw new RuntimeException("Error convirtiendo el objeto a String", e);
         }

@@ -18,7 +18,7 @@ public class UserTestContext {
         Faker faker = new Faker();
         this.personId = (long) faker.number().numberBetween(100000, 999999);
         this.subAccountId = (long) faker.number().numberBetween(200000, 299999);
-        this.documentNumber = faker.idNumber().valid();
+        this.documentNumber = faker.idNumber().valid().replace("-", "");
         this.plate = faker.bothify("???###").toUpperCase();
     }
 }

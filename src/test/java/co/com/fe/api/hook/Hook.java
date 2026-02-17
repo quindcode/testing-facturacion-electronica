@@ -19,10 +19,10 @@ public class Hook {
 
         OnStage.theActorCalled("admin").attemptsTo(
                 PrepareUserData.withProfile(UserProfile.BASIC_USER)
-                        .rememberContextAs("BASIC_USER"),
+                        .rememberUserAs("BASIC_USER"),
 
                 PrepareUserData.withProfile(UserProfile.THIRD_PARTY_MANDATE)
-                        .rememberContextAs("MANDATE_USER")
+                        .rememberUserAs("MANDATE_USER")
         );
     }
 

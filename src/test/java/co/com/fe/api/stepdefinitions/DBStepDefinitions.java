@@ -2,6 +2,7 @@ package co.com.fe.api.stepdefinitions;
 
 import co.com.fe.api.assertions.InvoiceAuditVerifier;
 import co.com.fe.api.models.dbmodels.InvoiceAudit;
+import co.com.fe.api.models.kafka.walletevents.WalletEvent;
 import co.com.fe.api.questions.InvoiceAuditRecords;
 import co.com.fe.api.questions.LastInvoiceRecord;
 import co.com.fe.api.tasks.WaitUntilInvoiceStatus;
@@ -18,38 +19,30 @@ public class DBStepDefinitions {
 
     @Then("I can see the invoice in billing database with status {string} or {string}")
     public void iCanSeeTheInvoiceInBillingDatabaseWithStatusOr(String status1, String status2) {
-        String uniqueTransactionId = OnStage.theActorInTheSpotlight().recall("uniqueTransactionId");
+        WalletEvent walletEvent = OnStage.theActorInTheSpotlight().recall("event");
+        String uniqueTransactionId = walletEvent.getBody().getEventData().getUniqueTransactionId();
 
         OnStage.theActorInTheSpotlight().should(
                 seeThat("el estado de la factura",
                         LastInvoiceRecord.withUniqueTransactionId(uniqueTransactionId),
-                        hasProperty("status", is(oneOf(status1,status2)))
-                )
-        );
-    }
-
-    @When("I wait until the invoice for subAccount {string} has status {string}")
-    public void iWaitUntilTheInvoiceForSubAccountHasStatus(String subAccountId, String invoiceStatus) {
-        OnStage.theActorInTheSpotlight().attemptsTo(
-                WaitUntilInvoiceStatus.is(invoiceStatus).forSubAccount(subAccountId)
-        );
+                        hasProperty("status", is(oneOf(status1, status2)))));
     }
 
     @When("I wait until the invoice for has status {string}")
     public void iWaitUntilTheInvoiceForUniqueIdHasStatus(String invoiceStatus) {
-        String uniqueTransactionId = OnStage.theActorInTheSpotlight().recall("uniqueTransactionId");
+        WalletEvent event = OnStage.theActorInTheSpotlight().recall("event");
+        String uniqueTransactionId = event.getBody().getEventData().getUniqueTransactionId();
         OnStage.theActorInTheSpotlight().attemptsTo(
-                WaitUntilInvoiceStatus.is(invoiceStatus).forUniqueId(uniqueTransactionId)
-        );
+                WaitUntilInvoiceStatus.is(invoiceStatus).forUniqueId(uniqueTransactionId));
     }
 
     @Then("I can verify the audit trail contains the expected transitions")
     public void iCanVerifyTheAuditTrailContainsTheExpectedTransitions() {
-        String uniqueTransactionId = OnStage.theActorInTheSpotlight().recall("uniqueTransactionId");
+        WalletEvent event = OnStage.theActorInTheSpotlight().recall("event");
+        String uniqueTransactionId = event.getBody().getEventData().getUniqueTransactionId();
 
         List<InvoiceAudit> invoiceAudits = OnStage.theActorInTheSpotlight().asksFor(
-                InvoiceAuditRecords.forUniqueTransactionId(uniqueTransactionId)
-        );
+                InvoiceAuditRecords.forUniqueTransactionId(uniqueTransactionId));
 
         InvoiceAuditVerifier.assertTrail(invoiceAudits);
     }
