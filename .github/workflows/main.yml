@@ -25,6 +25,17 @@ jobs:
 
       - name: Run Serenity tests
         run: ./gradlew clean test aggregate
+        env:
+          KAFKA_BROKERS: ${{ secrets.KAFKA_BROKERS }}
+          KAFKA_SASL_ENABLED: ${{ secrets.KAFKA_SASL_ENABLED }}
+          KAFKA_SASL_MECHANISM: ${{ secrets.KAFKA_SASL_MECHANISM }}
+          KAFKA_SASL_PASSWORD: ${{ secrets.KAFKA_SASL_PASSWORD }}
+          KAFKA_SASL_USERNAME: ${{ secrets.KAFKA_SASL_USERNAME }}
+          KAFKA_TLS_ENABLED: ${{ secrets.KAFKA_TLS_ENABLED }}
+          POSTGRES_DB_HOST: ${{ secrets.POSTGRES_DB_HOST }}
+          POSTGRES_DB_NAME: ${{ secrets.POSTGRES_DB_NAME }}
+          POSTGRES_DB_PASSWORD: ${{ secrets.POSTGRES_DB_PASSWORD }}
+          POSTGRES_DB_USERNAME: ${{ secrets.POSTGRES_DB_USERNAME }}
 
       - name: Upload Serenity Report
         if: always()

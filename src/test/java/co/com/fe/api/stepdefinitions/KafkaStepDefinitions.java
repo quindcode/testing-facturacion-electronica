@@ -10,7 +10,6 @@ import co.com.fe.api.tasks.WaitForProcessing;
 import co.com.fe.api.utils.Constants;
 import co.com.fe.api.utils.GlobalTestData;
 import co.com.fe.api.utils.JsonConverter;
-import co.com.fe.api.utils.UserTestContext;
 import co.com.fe.api.utils.WalletEventBuilder;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -61,9 +60,6 @@ public class KafkaStepDefinitions {
         OnStage.theActorInTheSpotlight().attemptsTo(
                 PublishMessage.to(topic).withKey(key).withPayload(payloadMessage));
         OnStage.theActorInTheSpotlight().remember("event", event);
-        // OnStage.theActorInTheSpotlight().remember("subAccountId", key);
-        // OnStage.theActorInTheSpotlight().remember("uniqueTransactionId",
-        // event.getBody().getEventData().getUniqueTransactionId());
     }
 
     @When("I wait {int} seconds for the event to process")
