@@ -1,6 +1,6 @@
 package co.com.fe.api.questions;
 
-import co.com.fe.api.abilities.UseDatabase;
+import co.com.fe.api.utils.DatabaseClient;
 import co.com.fe.api.models.dbmodels.Invoice;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Question;
@@ -27,7 +27,7 @@ public class LastInvoiceRecord implements Question<Invoice> {
     @Override
     public Invoice answeredBy(Actor actor) {
         try {
-            var invoiceRepository = UseDatabase.as(actor).invoiceRepository();
+            var invoiceRepository = DatabaseClient.getInstance().invoiceRepository();
 
             if (subAccountId != null) {
                 return invoiceRepository.findLastBySubAccountId(subAccountId);

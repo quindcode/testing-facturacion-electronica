@@ -1,6 +1,6 @@
 package co.com.fe.api.tasks;
 
-import co.com.fe.api.abilities.ConnectToKafka;
+import co.com.fe.api.utils.KafkaClient;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Task;
 import net.serenitybdd.screenplay.annotations.Subject;
@@ -54,13 +54,13 @@ public class PublishMessage implements Task {
     @Override
     @Subject("publishes message to topic {0}")
     public <T extends Actor> void performAs(T actor) {
-        ConnectToKafka kafkaAbility = ConnectToKafka.as(actor);
+        KafkaClient kafkaClient = KafkaClient.getInstance();
 
         ProducerRecord<String, String> recordToPublish = new ProducerRecord<>(topic, key, message);
 
         try {
             // Enviar el mensaje y esperar confirmación
-            Future<RecordMetadata> future = kafkaAbility.getProducer().send(recordToPublish);
+            Future<RecordMetadata> future = kafkaClient.getProducer().send(recordToPublish);
             RecordMetadata metadata = future.get(); // Espera síncrona para asegurar entrega
             System.out.println("Published -> topic:" + metadata.topic() + " partition:" + metadata.partition() + " offset:" + metadata.offset() + " timestamp:" + metadata.timestamp());
 

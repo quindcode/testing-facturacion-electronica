@@ -1,6 +1,6 @@
 package co.com.fe.api.questions;
 
-import co.com.fe.api.abilities.UseDatabase;
+import co.com.fe.api.utils.DatabaseClient;
 import co.com.fe.api.models.dbmodels.InvoiceAudit;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Question;
@@ -22,7 +22,7 @@ public class InvoiceAuditRecords implements Question<List<InvoiceAudit>> {
     @Override
     public List<InvoiceAudit> answeredBy(Actor actor) {
         try {
-            var invoiceRepository = UseDatabase.as(actor).invoiceRepository();
+            var invoiceRepository = DatabaseClient.getInstance().invoiceRepository();
 
             return invoiceRepository.findAuditTrailByUniqueTransactionId(uniqueTransactionId);
 

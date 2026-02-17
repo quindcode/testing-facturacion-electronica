@@ -1,6 +1,6 @@
 package co.com.fe.api.questions;
 
-import co.com.fe.api.abilities.ConnectToKafka;
+import co.com.fe.api.utils.KafkaClient;
 import co.com.fe.api.utils.JsonConverter;
 import co.com.fe.api.utils.WaitHelper;
 import net.serenitybdd.screenplay.Actor;
@@ -30,8 +30,8 @@ public class TheMessageWithUniqueId<T> implements Question<T> {
 
     @Override
     public T answeredBy(Actor actor) {
-        ConnectToKafka ability = ConnectToKafka.as(actor);
-        Consumer<String, String> consumer = ability.getConsumer();
+        KafkaClient client = KafkaClient.getInstance();
+        Consumer<String, String> consumer = client.getConsumer();
 
         // Se asume que el actor ya está escuchando el topic
 

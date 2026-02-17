@@ -1,6 +1,6 @@
 package co.com.fe.api.tasks;
 
-import co.com.fe.api.abilities.ConnectToKafka;
+import co.com.fe.api.utils.KafkaClient;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Task;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -25,8 +25,8 @@ public class PrepareKafkaListener implements Task {
 
     @Override
     public <T extends Actor> void performAs(T actor) {
-        ConnectToKafka ability = ConnectToKafka.as(actor);
-        Consumer<String, String> consumer = ability.getConsumer();
+        KafkaClient client = KafkaClient.getInstance();
+        Consumer<String, String> consumer = client.getConsumer();
 
         if (!consumer.assignment().isEmpty()) {
             System.out.println("⚠️ El consumidor ya tenía asignaciones: " + consumer.assignment());

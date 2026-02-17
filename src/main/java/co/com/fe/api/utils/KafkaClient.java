@@ -1,8 +1,5 @@
-package co.com.fe.api.abilities;
+package co.com.fe.api.utils;
 
-import co.com.fe.api.utils.KafkaConfigHelper;
-import net.serenitybdd.screenplay.Ability;
-import net.serenitybdd.screenplay.Actor;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -14,31 +11,32 @@ import java.time.Duration;
 import java.util.Properties;
 
 /**
- * Ability que permite al actor conectarse y interactuar con Kafka
- * Maneja tanto productores como consumidores de manera reutilizable
+ * Singleton utility to manage Kafka connections (Producer and Consumer)
+ * Replaces the per-actor ConnectToKafka ability.
  */
-public class ConnectToKafka implements Ability, AutoCloseable {
+public class KafkaClient {
 
-    private static Producer<String, String> sharedProducer;
+    private static KafkaClient instance;
+    private Producer<String, String> producer;
     private Consumer<String, String> consumer;
     private final Properties kafkaConfig;
 
-    public ConnectToKafka() {
+    private KafkaClient() {
         this.kafkaConfig = KafkaConfigHelper.getKafkaProperties();
     }
 
-    /**
-     * Método estático para crear la habilidad de conectarse a Kafka
-     */
-    public static ConnectToKafka withDefaultConfiguration() {
-        return new ConnectToKafka();
+    public static synchronized KafkaClient getInstance() {
+        if (instance == null) {
+            instance = new KafkaClient();
+        }
+        return instance;
     }
 
     /**
-     * Obtiene un productor de Kafka. Si no existe, lo crea.
+     * Gets or creates the shared Kafka Producer.
      */
     public synchronized Producer<String, String> getProducer() {
-        if (sharedProducer == null) {
+        if (producer == null) {
             Properties producerProps = new Properties();
             producerProps.putAll(kafkaConfig);
             producerProps.put("key.serializer", StringSerializer.class.getName());
@@ -46,20 +44,26 @@ public class ConnectToKafka implements Ability, AutoCloseable {
             producerProps.put("acks", "all");
             producerProps.put("linger.ms", 1);
 
-            sharedProducer = new KafkaProducer<>(producerProps);
+            producer = new KafkaProducer<>(producerProps);
 
-            // Hook para cerrar el producer al apagar la JVM (fin de toda la suite)
+            // Shutdown hook to ensure producer is closed
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                if (sharedProducer != null) sharedProducer.close();
+                if (producer != null) {
+                    try {
+                        producer.close();
+                    } catch (Exception e) {
+                        System.err.println("Error closing Kafka producer in shutdown hook: " + e.getMessage());
+                    }
+                }
             }));
         }
-        return sharedProducer;
+        return producer;
     }
 
     /**
-     * Obtiene un consumidor de Kafka. Si no existe, lo crea.
+     * Gets or creates the shared Kafka Consumer.
      */
-    public Consumer<String, String> getConsumer() {
+    public synchronized Consumer<String, String> getConsumer() {
         if (consumer == null) {
             Properties consumerProps = new Properties();
             consumerProps.putAll(kafkaConfig);
@@ -70,26 +74,24 @@ public class ConnectToKafka implements Ability, AutoCloseable {
             consumerProps.put("enable.auto.commit", "false");
             consumerProps.put("default.api.timeout.ms", "60000");
 
-
             consumer = new KafkaConsumer<>(consumerProps);
         }
         return consumer;
     }
 
     /**
-     * Método requerido por la interfaz Ability
+     * Closes the consumer connection.
+     * The producer is handled by the shutdown hook, but can be closed here if needed.
      */
-    public static ConnectToKafka as(Actor actor) {
-        return actor.abilityTo(ConnectToKafka.class);
-    }
-
-    /**
-     * Cierra las conexiones de Kafka
-     */
-    @Override
-    public void close() {
+    public synchronized void close() {
         if (consumer != null) {
-            consumer.close(Duration.ofSeconds(3));
+            try {
+                consumer.close(Duration.ofSeconds(3));
+            } catch (Exception e) {
+                System.err.println("Error closing Kafka consumer: " + e.getMessage());
+            } finally {
+                consumer = null;
+            }
         }
     }
 }

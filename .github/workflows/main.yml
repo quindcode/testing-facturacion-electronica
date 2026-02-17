@@ -1,8 +1,9 @@
 name: Integration testing execution
 on:
-  push:
-    branches: 
-      - feature/**
+  workflow_dispatch:
+#  push:
+#    branches:
+#      - feature/**
 
 jobs:
   serenity-test-install:

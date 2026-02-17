@@ -1,6 +1,6 @@
 package co.com.fe.api.questions;
 
-import co.com.fe.api.abilities.ConnectToKafka;
+import co.com.fe.api.utils.KafkaClient;
 import co.com.fe.api.utils.JsonConverter;
 import co.com.fe.api.utils.WaitHelper;
 import net.serenitybdd.screenplay.Actor;
@@ -45,7 +45,7 @@ public class TheMessageWithKey<T> implements Question<T> {
 
     @Override
     public T answeredBy(Actor actor) {
-        ConnectToKafka kafkaAbility = ConnectToKafka.as(actor);
+        KafkaClient kafkaClient = KafkaClient.getInstance();
 
         // Variable para guardar el mensaje encontrado
         final String[] foundMessage = {null};
@@ -54,7 +54,7 @@ public class TheMessageWithKey<T> implements Question<T> {
 
         // Usar polling para buscar el mensaje con la key específica
         boolean messageFound = WaitHelper.waitUntil(() -> {
-            ConsumerRecords<String, String> records = kafkaAbility.getConsumer().poll(Duration.ofMillis(200));
+            ConsumerRecords<String, String> records = kafkaClient.getConsumer().poll(Duration.ofMillis(200));
 
             boolean foundInThisPoll = false;
             for (ConsumerRecord<String, String> record : records) {
