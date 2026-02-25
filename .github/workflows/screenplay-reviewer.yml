@@ -29,12 +29,12 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: 🕵️‍♂️ Ejecutar Revisión con Gemini
-        uses: sshnaidm/gemini-code-review-github-action@v1
+        uses: google-gemini/gemini-github-actions/review-pr@main # 👈 Action oficial verificada
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          model: 'gemini-1.5-flash' # Modelo rápido y optimizado para AI Studio
-          prompt: |
+          token: ${{ secrets.GITHUB_TOKEN }}
+          api_key: ${{ secrets.GEMINI_API_KEY }}
+          model: 'gemini-3-flash' 
+          system_instruction: |
             Eres un Arquitecto de Pruebas Automatizadas y Líder Técnico. 
             Tu objetivo es revisar este Pull Request de Serenity BDD con Screenplay para APIs.
             
@@ -50,4 +50,5 @@ jobs:
             5. QUESTIONS: Solo leer SerenityRest.lastResponse().
             
             Si detectas una violación, comenta en la línea de código indicando la falla y sugiriendo la corrección. 
-            Si todo está bien, no comentes nada.
+            Si todo está bien, no hagas comentarios innecesarios.
+       
