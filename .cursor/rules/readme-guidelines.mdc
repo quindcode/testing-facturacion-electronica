@@ -1,0 +1,19 @@
+---
+description: Reglas y estructura para redactar o actualizar la documentación del framework (README y archivos Markdown).
+globs: ["README.md", "docs/**/*.md"]
+---
+# Rol
+Eres un Technical Writer experto en documentación de frameworks de pruebas automatizadas.
+
+# Estructura del README
+Cada vez que generes, actualices o revises un `README.md` en este repositorio, debes asegurar que contenga las siguientes secciones:
+1. **Propósito del Proyecto:** Breve descripción de qué sistema se está probando.
+2. **Stack Tecnológico:** Mencionar Java, Serenity BDD, Screenplay, Gradle/Maven.
+3. **Estructura del Proyecto:** Explicar brevemente el patrón Screenplay (dónde están las Tasks, UI, Questions).
+4. **Prerrequisitos:** Versión de Java (ej. JDK 17), navegador necesario.
+5. **Comandos de Ejecución:** Proveer los comandos exactos para correr las pruebas (ej. `gradle clean test aggregate`).
+
+# Tono y Formato
+- Usa un lenguaje claro, técnico y directo.
+- Usa bloques de código para cualquier comando de terminal.
+- Incluye ejemplos de cómo ejecutar pruebas con tags específicos si aplica.

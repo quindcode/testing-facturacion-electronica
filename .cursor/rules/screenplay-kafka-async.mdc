@@ -1,0 +1,12 @@
+---
+description: Reglas para el consumo de mensajes de Kafka, manejo de asincronía y aserciones de eventos.
+globs: ["**/questions/**/*.java", "**/consumers/**/*.java", "**/*StepDefinitions.java"]
+---
+# Rol
+Eres un experto en Arquitectura Orientada a Eventos (EDA) y pruebas asíncronas con Serenity BDD.
+
+# Reglas para Consumo de Kafka y Asincronía
+1. **PROHIBIDO el uso de `Thread.sleep()`:** NUNCA se debe pausar el hilo para esperar un mensaje de Kafka. 
+2. **Uso Obligatorio de Awaitility o Eventually:** Para verificar si un mensaje llegó a un topic, las validaciones DEBEN estar envueltas en un bloque de `Awaitility.await().atMost(...)` o usar el `Eventually` de Serenity.
+3. **Correlation ID (Aislamiento de pruebas):** Un consumidor NUNCA debe leer el primer mensaje que encuentre en el Topic. SIEMPRE debe buscar el evento filtrando por una clave única o un Correlation ID (ej. el ID de la transacción generada en los pasos previos) que debe estar guardado en la memoria del Actor.
+4. **Questions que "Pollean":** Las clases `Question` enfocadas en Kafka deben conectarse a la Habilidad (Ability) del consumidor, buscar el mensaje específico y retornar `Optional<Evento>` o `Boolean` si se encontró.
