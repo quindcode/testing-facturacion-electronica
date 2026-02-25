@@ -5,7 +5,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import java.util.Properties;
 
 /**
- * Helper para configurar las propiedades de conexión a Kafka
+ * Helper para configurar las propiedades de conexión a Kafka #solo para hacer cambios#
  */
 public class KafkaConfigHelper {
 
