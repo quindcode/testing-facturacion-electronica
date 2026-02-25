@@ -1,17 +1,17 @@
-name: 🤖 Screenplay API Architecture Reviewer
+name: 🤖 Cursor Agent - PR Reviewer (Powered by Gemini)
 
 on:
   pull_request:
     types: [opened, synchronize]
-    paths:
-      - '**.java' # Solo se ejecutará si hay cambios en código Java
+    # Se eliminó la restricción de 'paths' para asegurar que se ejecute en tu prueba actual
+    # Puedes volver a activarla después de validar que el pipeline funciona.
 
 jobs:
   screenplay-code-review:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write # Necesario para que el bot pueda comentar en el PR
+      pull-requests: write 
 
     steps:
       - name: Checkout del código
@@ -19,22 +19,36 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ejecutar AI Code Reviewer
-        uses: anc95/ChatGPT-CodeReview@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          LANGUAGE: Spanish
+      - name: 🧠 Extraer Reglas de Cursor (.mdc)
+        id: extract_rules
+        run: |
+          # Consolidamos tus reglas de la carpeta .cursor/rules para pasárselas a Gemini
+          RULES_CONTEXT=$(cat .cursor/rules/*.mdc 2>/dev/null || echo "No se encontraron reglas específicas.")
+          echo "CURSOR_RULES<<EOF" >> $GITHUB_ENV
+          echo "$RULES_CONTEXT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: 🕵️‍♂️ Ejecutar Revisión con Gemini
+        uses: google-gemini/gemini-github-actions/review-pr@main # 👈 Action oficial verificada
         with:
-          model: gpt-4o-mini # Rápido y económico, o gpt-4o para mayor precisión
-          # Aquí inyectamos el "cerebro" del líder técnico que creamos
-          system_message: |
-            Eres un Arquitecto de Pruebas Automatizadas revisando un Pull Request de Serenity BDD con Screenplay para APIs (Rest Assured).
-            Debes comentar directamente en las líneas de código si detectas violaciones a estas reglas estrictas:
-            1. TASKS: Las clases 'Task' NO deben tener aserciones (.then().statusCode(), Ensure, seeThat). Solo construyen y envían la petición (Post.to, Get.resource).
-            2. MODELS/PAYLOADS: Prohibido concatenar JSON en Strings. Los bodies de las peticiones deben usar objetos Java (POJOs/DTOs/Builders).
-            3. AUTH & ESTADO: Prohibido usar variables 'static' para guardar tokens. Obligatorio usar 'actor.remember()' y 'actor.recall()'.
-            4. TEST DATA: Prohibido quemar datos únicos (emails, IDs) en el código. Exige el uso de Factories con Datafaker.
-            5. QUESTIONS: Las 'Questions' solo deben leer 'SerenityRest.lastResponse()' sin hacer nuevas peticiones.
+          token: ${{ secrets.GITHUB_TOKEN }}
+          api_key: ${{ secrets.GEMINI_API_KEY }}
+          model: 'gemini-3-flash' 
+          system_instruction: |
+            Eres un Arquitecto de Pruebas Automatizadas y Líder Técnico. 
+            Tu objetivo es revisar este Pull Request de Serenity BDD con Screenplay para APIs.
             
-            Si el código cumple, no comentes nada. Si viola una regla, sé directo, explica la falla arquitectónica y sugiere el código corregido.
+            DEBES basar tu revisión en estas reglas de arquitectura configuradas en el proyecto:
+            
+            ${{ env.CURSOR_RULES }}
+            
+            REGLAS CRÍTICAS ADICIONALES:
+            1. TASKS: Sin aserciones (.then().statusCode(), Ensure, seeThat).
+            2. MODELS: Prohibido JSON en Strings. Usar POJOs/DTOs.
+            3. AUTH: Prohibido variables 'static'. Usar actor.remember() y actor.recall().
+            4. TEST DATA: Usar Factories con Datafaker para datos únicos.
+            5. QUESTIONS: Solo leer SerenityRest.lastResponse().
+            
+            Si detectas una violación, comenta en la línea de código indicando la falla y sugiriendo la corrección. 
+            Si todo está bien, no hagas comentarios innecesarios.
+       
