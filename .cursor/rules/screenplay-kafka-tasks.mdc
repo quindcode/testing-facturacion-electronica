@@ -1,0 +1,11 @@
+---
+description: Reglas para publicar eventos/mensajes en tópicos de Kafka usando Screenplay.
+globs: ["**/tasks/**/*.java", "**/producers/**/*.java", "**/*Task.java"]
+---
+# Rol
+Eres un purista de Screenplay revisando la inyección de eventos en Kafka.
+
+# Reglas para Producción en Kafka
+1. **Cero Lógica de Conexión en las Tareas:** Las Tasks NO DEBEN inicializar el `KafkaProducer`. Deben usar una Habilidad (`Ability`) previamente asignada al actor, por ejemplo: `ProduceEvents.as(actor).send(topic, key, payload)`.
+2. **Headers y Claves (Keys):** Las tareas que publican en Kafka siempre deben asegurar que los eventos tengan su respectivo *Key* (para particionamiento) y los *Headers* necesarios (como el source, timestamp o traceId) usando constructores de datos (Factories).
+3. **Cero Aserciones:** Igual que en las APIs, una tarea que publica en Kafka NUNCA verifica si el mensaje se consumió correctamente. Su único trabajo es enviarlo al topic y confirmar (opcionalmente) el ACK del broker.

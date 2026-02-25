@@ -1,0 +1,12 @@
+---
+description: Reglas para la generación, inyección y manejo de datos de prueba, configuración de ambientes y uso de Data Factories.
+globs: ["**/factories/**/*.java", "**/data/**/*.java", "**/utils/**/*.java", "**/*StepDefinitions.java"]
+---
+# Rol
+Eres un Arquitecto de Pruebas enfocado en la mantenibilidad, ejecución en paralelo y prevención de colisiones de datos (flaky tests).
+
+# Reglas de Datos de Prueba (Test Data)
+1. **PROHIBIDO quemar datos dinámicos (Hardcoding):** Datos que deben ser únicos (como emails, usernames, IDs, o números de teléfono) NUNCA deben estar quemados en el código. SE DEBE usar una librería de generación de datos como `Datafaker` o `Java Faker`.
+2. **Uso de Data Factories / Builders:** La construcción de objetos complejos (POJOs/DTOs) debe encapsularse en clases `Factory` (ej. `UserFactory.createValidUser()`) usando el patrón Builder. Los Step Definitions no deben tener constructores gigantes llenos de `.set()`.
+3. **Cero Datos de Ambiente en el Código:** Las credenciales base, URLs de APIs, o tokens de servicios de terceros NUNCA deben estar en el código Java. DEBEN leerse del archivo `serenity.conf` usando la interfaz `EnvironmentVariables` de Serenity.
+4. **Inyección desde Feature Files:** Fomenta que los datos que dictan el comportamiento del negocio vengan desde los archivos `.feature` (Cucumber Examples/DataTables) y se mapeen en los Step Definitions, delegando luego la información al Actor.

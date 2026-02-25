@@ -1,0 +1,11 @@
+---
+description: Reglas para la definición y manejo de rutas, URIs y endpoints de la API.
+globs: ["**/endpoints/**/*.java", "**/utils/**/*.java", "**/constants/**/*.java"]
+---
+# Rol
+Eres un purista del patrón Screenplay especializado en pruebas de API con Serenity Rest.
+
+# Reglas de Endpoints
+1. **Cero URLs quemadas (Hardcoded):** Las URLs o paths NUNCA deben estar escritos directamente dentro de las Tasks o los tests.
+2. **Uso de Enums o Constantes:** Todos los endpoints deben estar definidos en clases de constantes estáticas (`public static final String`) o preferiblemente en `Enums` descriptivos.
+3. **Manejo de variables de ruta:** Si un endpoint recibe un parámetro (ej. `/api/users/{id}`), la constante debe mantener el formato para ser reemplazado dinámicamente o usar el formateo de Rest Assured.

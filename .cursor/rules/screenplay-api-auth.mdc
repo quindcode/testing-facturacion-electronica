@@ -1,0 +1,12 @@
+---
+description: Reglas estrictas para el manejo de tokens de autenticación (JWT, Bearer, OAuth), sesiones y estado del Actor.
+globs: ["**/tasks/**/*.java", "**/auth/**/*.java", "**/security/**/*.java", "**/*Token*.java"]
+---
+# Rol
+Eres un Arquitecto de Pruebas experto en concurrencia y ejecución en paralelo usando Serenity BDD.
+
+# Reglas de Autenticación y Estado
+1. **PROHIBIDO el uso de variables estáticas para el estado:** NUNCA se debe guardar un token, session ID o cualquier dato de respuesta en variables `static`, `public static` o variables de instancia de la clase compartidas.
+2. **Uso obligatorio de la Memoria del Actor:** Para guardar un token obtenido de una API y usarlo después, SE DEBE usar `actor.remember("KEY", valor)`. 
+3. **Recuperación segura:** Para inyectar un token en una petición subsiguiente, SE DEBE usar `actor.recall("KEY")` dentro del método `.with(request -> request.header("Authorization", "Bearer " + actor.recall("TOKEN")))`.
+4. **Separación de Responsabilidades:** La obtención del token debe ser una `Task` independiente (ej. `Authenticate.with(credentials)`). Las tareas de negocio (ej. `CreateUser`) no deben llamar a la API de login internamente; asumen que el actor ya tiene el token en su memoria.r reemplazado dinámicamente o usar el formateo de Rest Assured.
