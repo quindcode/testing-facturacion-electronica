@@ -17,30 +17,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: 🧠 Extraer Reglas de Cursor (.mdc)
-        id: extract_rules
-        run: |
-          # Lee absolutamente todos los archivos .mdc y los consolida con una separación clara
-          RULES_CONTEXT=""
-          for file in .cursor/rules/*.mdc; do
-            if [ -f "$file" ]; then
-              RULES_CONTEXT="$RULES_CONTEXT\n\n--- INICIO DE REGLA: $file ---\n$(cat "$file")\n--- FIN DE REGLA ---"
-            fi
-          done
-          
-          if [ -z "$RULES_CONTEXT" ]; then
-            RULES_CONTEXT="No se encontraron reglas específicas en .cursor/rules/"
-          fi
-          
-          echo "CURSOR_RULES<<EOF" >> $GITHUB_ENV
-          echo -e "$RULES_CONTEXT" >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
       - name: 🔍 Obtener el Diff del PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr diff ${{ github.event.pull_request.number }} > pr_diff.txt
+        run: gh pr diff ${{ github.event.pull_request.number }} > pr_diff.txt
 
       - name: 🤖 Revisar PR con Gemini y Comentar
         env:
@@ -49,23 +29,33 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           python3 -c '
-          import os, json, urllib.request, subprocess
+          import os, json, urllib.request, subprocess, glob
           
           api_key = os.environ.get("GEMINI_API_KEY")
           pr_number = os.environ.get("PR_NUMBER")
-          cursor_rules = os.environ.get("CURSOR_RULES", "")
           
-          # 1. Leer el diff
-          with open("pr_diff.txt", "r") as f:
+          # 1. Leer reglas de Cursor directamente en Python (A prueba de fallos)
+          cursor_rules = ""
+          mdc_files = glob.glob(".cursor/rules/*.mdc")
+          for filepath in mdc_files:
+              with open(filepath, "r", encoding="utf-8") as rf:
+                  cursor_rules += f"\n--- REGLA: {filepath} ---\n{rf.read()}\n"
+          
+          print(f"🛠️ DEBUG: Se cargaron {len(mdc_files)} archivos de reglas .mdc.")
+          
+          # 2. Leer el diff
+          with open("pr_diff.txt", "r", encoding="utf-8") as f:
               pr_diff = f.read()
           
           if not pr_diff.strip():
               print("No hay cambios en el código para revisar.")
               exit(0)
           
-          # 2. Extraer los archivos completos para contexto
+          # 3. Extraer los archivos completos para contexto real
           result = subprocess.run(["gh", "pr", "view", pr_number, "--json", "files", "--jq", ".files[].path"], capture_output=True, text=True)
           changed_files = [f for f in result.stdout.splitlines() if f.endswith(".java") or f.endswith(".md") or f.endswith(".feature")]
+          
+          print(f"🛠️ DEBUG: Analizando {len(changed_files)} archivos modificados en este PR: {changed_files}")
           
           archivos_completos = ""
           for f_path in changed_files:
@@ -73,41 +63,46 @@ jobs:
                   with open(f_path, "r", encoding="utf-8") as file:
                       archivos_completos += f"\n\n==== RUTA DEL ARCHIVO: {f_path} ====\n```\n{file.read()}\n```\n"
           
-          # 3. Prompt Dinámico basado en Globs
+          # 4. Prompt Dinámico Extremo
           prompt = f"""
-          Eres un motor avanzado de revisión de código automatizado que emula el comportamiento de "Cursor IDE".
+          Eres un Arquitecto de Pruebas Automatizadas (Serenity BDD/Screenplay) implacable y meticuloso. Tu misión es auditar el código de este Pull Request.
           
-          REGLAS DEL PROYECTO (.mdc):
-          A continuación se listan las reglas del proyecto. Presta especial atención a los metadatos `globs` y al `# Rol`.
+          PARTE A: REGLAS ESPECÍFICAS DE CARPETA (.mdc)
+          Lee estos archivos de configuración. Si la ruta de un archivo modificado coincide con el `globs` de una regla, DEBES juzgar el archivo asumiendo ese `# Rol` y aplicando esas reglas al pie de la letra.
           <cursor_rules>
           {cursor_rules}
           </cursor_rules>
+          
+          PARTE B: MEJORES PRÁCTICAS GENERALES (NO NEGOCIABLES)
+          Además de las reglas anteriores, debes penalizar severamente:
+          1. Logs en Producción: Uso de `System.out.println` o `e.printStackTrace()`. Exige el uso de un Logger (SLF4J/Logback).
+          2. Bloques Catch vacíos o malos manejos de excepciones.
+          3. Nombres de variables incomprensibles o violaciones de Clean Code.
+          4. Malos olores en archivos .feature (escenarios sin sentido, pasos ambiguos).
           
           ARCHIVOS A AUDITAR (CÓDIGO COMPLETO):
           <archivos>
           {archivos_completos}
           </archivos>
           
-          EL DIFF (Cambios de este PR):
+          EL DIFF (Cambios que el dev hizo hoy):
           <diff>
           {pr_diff}
           </diff>
           
-          INSTRUCCIONES CRÍTICAS DE AUDITORÍA:
-          1. MATCHING DE GLOBS: Por cada archivo en <archivos>, lee su "RUTA DEL ARCHIVO". Busca en las <cursor_rules> qué bloque tiene un patrón `globs` que coincida con esa ruta (ej. si la ruta tiene "tasks", aplica la regla de tasks; si es "README.md", aplica la regla de documentación).
-          2. ASUME EL ROL: Adopta estrictamente el `# Rol` de la regla que hizo match para auditar ese archivo en específico.
-          3. AUDITORÍA PROFUNDA: Revisa el archivo COMPLETO usando las reglas específicas de ese glob. No te limites a auditar solo las líneas nuevas del <diff>. Si el archivo viola la arquitectura de su carpeta, es un error.
-          4. REPORTE: Si encuentras violaciones, redacta un comentario constructivo en Markdown. Debes mencionar explícitamente qué archivo falló, qué regla del .mdc se está violando y proveer el código corregido.
-          5. Si todos los archivos cumplen sus respectivas reglas de arquitectura, responde ÚNICAMENTE con la palabra "LGTM".
+          INSTRUCCIONES DE RESPUESTA:
+          - Cruza el código de <archivos> con las reglas que correspondan en <cursor_rules> (basado en la ruta) y con la PARTE B.
+          - Si encuentras CUALQUIER error, escribe un comentario severo pero formativo en Markdown, listando el archivo, el error detectado y cómo solucionarlo.
+          - Responde "LGTM" ÚNICAMENTE si el código es absolutamente perfecto en arquitectura y limpieza.
           """
           
-          # 4. Llamada a Gemini 2.5 Flash
+          # Llamada a Gemini
           payload = {
               "systemInstruction": {
-                  "parts": [{"text": "Eres un auditor estricto de código automatizado. Tu precisión arquitectónica es absoluta."}]
+                  "parts": [{"text": "Eres un auditor de código senior, crítico y detallista. No perdonas errores de Clean Code ni violaciones a Screenplay."}]
               },
               "contents": [{"parts": [{"text": prompt}]}],
-              "generationConfig": {"temperature": 0.1} # Súper analítico, cero alucinaciones
+              "generationConfig": {"temperature": 0.1}
           }
           
           url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
@@ -119,15 +114,15 @@ jobs:
                   ai_comment = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
           
                   if ai_comment != "LGTM":
-                      with open("comment.md", "w") as f:
-                          f.write("### 🤖 Auditoría de Arquitectura (Cursor Rules)\n\n" + ai_comment)
+                      with open("comment.md", "w", encoding="utf-8") as f:
+                          f.write("### 🚨 Auditoría de Código y Arquitectura (Gemini AI)\n\n" + ai_comment)
           
-                      print("Se encontraron violaciones a las reglas. Publicando en el PR...")
+                      print("¡Se detectaron malas prácticas! Publicando comentario en GitHub...")
                       subprocess.run(["gh", "pr", "comment", pr_number, "-F", "comment.md"])
                   else:
-                      print("El código cumple con todas las reglas de los globs. LGTM.")
+                      print("El código es perfecto. LGTM.")
           
           except Exception as e:
-              print(f"Error al comunicarse con Gemini o GitHub: {e}")
+              print(f"Error crítico en la API: {e}")
               exit(1)
           '

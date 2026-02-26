@@ -67,6 +67,7 @@ public class PublishMessage implements Task {
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to publish message to topic: " + topic, e);
+
         }
     }
 }
