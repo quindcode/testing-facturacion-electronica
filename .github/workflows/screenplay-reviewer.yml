@@ -3,15 +3,13 @@ name: 🤖 Cursor Agent - PR Reviewer (Powered by Gemini)
 on:
   pull_request:
     types: [opened, synchronize]
-    # Se eliminó la restricción de 'paths' para asegurar que se ejecute en tu prueba actual
-    # Puedes volver a activarla después de validar que el pipeline funciona.
 
 jobs:
   screenplay-code-review:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      pull-requests: write 
+      pull-requests: write
 
     steps:
       - name: Checkout del código
@@ -22,33 +20,93 @@ jobs:
       - name: 🧠 Extraer Reglas de Cursor (.mdc)
         id: extract_rules
         run: |
-          # Consolidamos tus reglas de la carpeta .cursor/rules para pasárselas a Gemini
           RULES_CONTEXT=$(cat .cursor/rules/*.mdc 2>/dev/null || echo "No se encontraron reglas específicas.")
           echo "CURSOR_RULES<<EOF" >> $GITHUB_ENV
           echo "$RULES_CONTEXT" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: 🕵️‍♂️ Ejecutar Revisión con Gemini
-        uses: google-gemini/gemini-github-actions/review-pr@main # 👈 Action oficial verificada
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          api_key: ${{ secrets.GEMINI_API_KEY }}
-          model: 'gemini-3-flash' 
-          system_instruction: |
-            Eres un Arquitecto de Pruebas Automatizadas y Líder Técnico. 
-            Tu objetivo es revisar este Pull Request de Serenity BDD con Screenplay para APIs.
-            
-            DEBES basar tu revisión en estas reglas de arquitectura configuradas en el proyecto:
-            
-            ${{ env.CURSOR_RULES }}
-            
-            REGLAS CRÍTICAS ADICIONALES:
-            1. TASKS: Sin aserciones (.then().statusCode(), Ensure, seeThat).
-            2. MODELS: Prohibido JSON en Strings. Usar POJOs/DTOs.
-            3. AUTH: Prohibido variables 'static'. Usar actor.remember() y actor.recall().
-            4. TEST DATA: Usar Factories con Datafaker para datos únicos.
-            5. QUESTIONS: Solo leer SerenityRest.lastResponse().
-            
-            Si detectas una violación, comenta en la línea de código indicando la falla y sugiriendo la corrección. 
-            Si todo está bien, no hagas comentarios innecesarios.
-       
+      - name: 🔍 Obtener el Diff del PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Obtenemos los cambios exactos de este PR para que la IA los lea
+          gh pr diff ${{ github.event.pull_request.number }} > pr_diff.txt
+
+      - name: 🤖 Revisar PR con Gemini y Comentar
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          python3 -c '
+          import os, json, urllib.request, subprocess
+          
+          api_key = os.environ.get("GEMINI_API_KEY")
+          pr_number = os.environ.get("PR_NUMBER")
+          cursor_rules = os.environ.get("CURSOR_RULES", "")
+          
+          # Leer el diff del PR
+          with open("pr_diff.txt", "r") as f:
+              pr_diff = f.read()
+          
+          if not pr_diff.strip():
+              print("No hay cambios en el código para revisar.")
+              exit(0)
+          
+          # Prompt dinámico enriquecido con tu gradle
+          prompt = f"""
+          Revisa el siguiente git diff de un Pull Request. 
+          Contexto del proyecto: Java 21, Serenity BDD 4.0.12, Patrón Screenplay para APIs, Lombok y JavaFaker.
+          
+          REGLAS DE ARQUITECTURA (Cursor):
+          {cursor_rules}
+          
+          REGLAS CRÍTICAS DE EQUIPO:
+          1. TASKS: Cero aserciones lógicas.
+          2. MODELS: Prohibido JSON quemado en Strings. Usar POJOs/DTOs aprovechando @Data o @Builder de Lombok.
+          3. AUTH: Prohibido variables static. Compartir estado usando actor.remember() y actor.recall().
+          4. TEST DATA: Generar datos dinámicos obligatoriamente usando JavaFaker (Faker).
+          5. QUESTIONS: Dedicadas estrictamente a leer SerenityRest.lastResponse().
+          
+          DIFF A REVISAR:
+          ```diff
+          {pr_diff}
+          ```
+          
+          INSTRUCCIONES: 
+          Si detectas violaciones a estas reglas, escribe un comentario constructivo en formato Markdown mencionando el archivo y la sugerencia de código. 
+          Si todo está correcto, responde ÚNICAMENTE con la palabra "LGTM".
+          """
+          
+          # Estructura de la petición a la API de Gemini
+          payload = {
+              "systemInstruction": {
+                  "parts": [{"text": "Eres un Arquitecto de Pruebas Automatizadas y Líder Técnico muy estricto pero empático."}]
+              },
+              "contents": [{"parts": [{"text": prompt}]}],
+              "generationConfig": {"temperature": 0.2} # Temperatura baja para que sea analítico y no creativo
+          }
+          
+          url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
+          req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
+          
+          try:
+              # Llamada a la API
+              with urllib.request.urlopen(req) as response:
+                  res_data = json.loads(response.read())
+                  ai_comment = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
+          
+                  # Publicar en GitHub solo si hay observaciones
+                  if ai_comment != "LGTM":
+                      with open("comment.md", "w") as f:
+                          f.write("### 🤖 Revisión Arquitectónica (Gemini AI)\n\n" + ai_comment)
+          
+                      print("Publicando comentarios en el PR...")
+                      subprocess.run(["gh", "pr", "comment", pr_number, "-F", "comment.md"])
+                  else:
+                      print("El código cumple con todas las reglas. No se requieren comentarios.")
+          
+          except Exception as e:
+              print(f"Error al comunicarse con Gemini o GitHub: {e}")
+              exit(1)
+          '
