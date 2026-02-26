@@ -20,16 +20,26 @@ jobs:
       - name: 🧠 Extraer Reglas de Cursor (.mdc)
         id: extract_rules
         run: |
-          RULES_CONTEXT=$(cat .cursor/rules/*.mdc 2>/dev/null || echo "No se encontraron reglas específicas.")
+          # Lee absolutamente todos los archivos .mdc y los consolida con una separación clara
+          RULES_CONTEXT=""
+          for file in .cursor/rules/*.mdc; do
+            if [ -f "$file" ]; then
+              RULES_CONTEXT="$RULES_CONTEXT\n\n--- INICIO DE REGLA: $file ---\n$(cat "$file")\n--- FIN DE REGLA ---"
+            fi
+          done
+          
+          if [ -z "$RULES_CONTEXT" ]; then
+            RULES_CONTEXT="No se encontraron reglas específicas en .cursor/rules/"
+          fi
+          
           echo "CURSOR_RULES<<EOF" >> $GITHUB_ENV
-          echo "$RULES_CONTEXT" >> $GITHUB_ENV
+          echo -e "$RULES_CONTEXT" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
       - name: 🔍 Obtener el Diff del PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Obtenemos los cambios exactos de este PR para que la IA los lea
           gh pr diff ${{ github.event.pull_request.number }} > pr_diff.txt
 
       - name: 🤖 Revisar PR con Gemini y Comentar
@@ -45,7 +55,7 @@ jobs:
           pr_number = os.environ.get("PR_NUMBER")
           cursor_rules = os.environ.get("CURSOR_RULES", "")
           
-          # Leer el diff del PR
+          # 1. Leer el diff
           with open("pr_diff.txt", "r") as f:
               pr_diff = f.read()
           
@@ -53,58 +63,69 @@ jobs:
               print("No hay cambios en el código para revisar.")
               exit(0)
           
-          # Prompt dinámico enriquecido con tu gradle
+          # 2. Extraer los archivos completos para contexto
+          result = subprocess.run(["gh", "pr", "view", pr_number, "--json", "files", "--jq", ".files[].path"], capture_output=True, text=True)
+          changed_files = [f for f in result.stdout.splitlines() if f.endswith(".java") or f.endswith(".md") or f.endswith(".feature")]
+          
+          archivos_completos = ""
+          for f_path in changed_files:
+              if os.path.exists(f_path):
+                  with open(f_path, "r", encoding="utf-8") as file:
+                      archivos_completos += f"\n\n==== RUTA DEL ARCHIVO: {f_path} ====\n```\n{file.read()}\n```\n"
+          
+          # 3. Prompt Dinámico basado en Globs
           prompt = f"""
-          Revisa el siguiente git diff de un Pull Request. 
-          Contexto del proyecto: Java 21, Serenity BDD 4.0.12, Patrón Screenplay para APIs, Lombok y JavaFaker.
+          Eres un motor avanzado de revisión de código automatizado que emula el comportamiento de "Cursor IDE".
           
-          REGLAS DE ARQUITECTURA (Cursor):
+          REGLAS DEL PROYECTO (.mdc):
+          A continuación se listan las reglas del proyecto. Presta especial atención a los metadatos `globs` y al `# Rol`.
+          <cursor_rules>
           {cursor_rules}
+          </cursor_rules>
           
-          REGLAS CRÍTICAS DE EQUIPO:
-          1. TASKS: Cero aserciones lógicas.
-          2. MODELS: Prohibido JSON quemado en Strings. Usar POJOs/DTOs aprovechando @Data o @Builder de Lombok.
-          3. AUTH: Prohibido variables static. Compartir estado usando actor.remember() y actor.recall().
-          4. TEST DATA: Generar datos dinámicos obligatoriamente usando JavaFaker (Faker).
-          5. QUESTIONS: Dedicadas estrictamente a leer SerenityRest.lastResponse().
+          ARCHIVOS A AUDITAR (CÓDIGO COMPLETO):
+          <archivos>
+          {archivos_completos}
+          </archivos>
           
-          DIFF A REVISAR:
-          ```diff
+          EL DIFF (Cambios de este PR):
+          <diff>
           {pr_diff}
-          ```
+          </diff>
           
-          INSTRUCCIONES: 
-          Si detectas violaciones a estas reglas, escribe un comentario constructivo en formato Markdown mencionando el archivo y la sugerencia de código. 
-          Si todo está correcto, responde ÚNICAMENTE con la palabra "LGTM".
+          INSTRUCCIONES CRÍTICAS DE AUDITORÍA:
+          1. MATCHING DE GLOBS: Por cada archivo en <archivos>, lee su "RUTA DEL ARCHIVO". Busca en las <cursor_rules> qué bloque tiene un patrón `globs` que coincida con esa ruta (ej. si la ruta tiene "tasks", aplica la regla de tasks; si es "README.md", aplica la regla de documentación).
+          2. ASUME EL ROL: Adopta estrictamente el `# Rol` de la regla que hizo match para auditar ese archivo en específico.
+          3. AUDITORÍA PROFUNDA: Revisa el archivo COMPLETO usando las reglas específicas de ese glob. No te limites a auditar solo las líneas nuevas del <diff>. Si el archivo viola la arquitectura de su carpeta, es un error.
+          4. REPORTE: Si encuentras violaciones, redacta un comentario constructivo en Markdown. Debes mencionar explícitamente qué archivo falló, qué regla del .mdc se está violando y proveer el código corregido.
+          5. Si todos los archivos cumplen sus respectivas reglas de arquitectura, responde ÚNICAMENTE con la palabra "LGTM".
           """
           
-          # Estructura de la petición a la API de Gemini
+          # 4. Llamada a Gemini 2.5 Flash
           payload = {
               "systemInstruction": {
-                  "parts": [{"text": "Eres un Arquitecto de Pruebas Automatizadas y Líder Técnico muy estricto pero empático."}]
+                  "parts": [{"text": "Eres un auditor estricto de código automatizado. Tu precisión arquitectónica es absoluta."}]
               },
               "contents": [{"parts": [{"text": prompt}]}],
-              "generationConfig": {"temperature": 0.2} # Temperatura baja para que sea analítico y no creativo
+              "generationConfig": {"temperature": 0.1} # Súper analítico, cero alucinaciones
           }
           
           url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
           req = urllib.request.Request(url, data=json.dumps(payload).encode("utf-8"), headers={"Content-Type": "application/json"})
           
           try:
-              # Llamada a la API
               with urllib.request.urlopen(req) as response:
                   res_data = json.loads(response.read())
                   ai_comment = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
           
-                  # Publicar en GitHub solo si hay observaciones
                   if ai_comment != "LGTM":
                       with open("comment.md", "w") as f:
-                          f.write("### 🤖 Revisión Arquitectónica (Gemini AI)\n\n" + ai_comment)
+                          f.write("### 🤖 Auditoría de Arquitectura (Cursor Rules)\n\n" + ai_comment)
           
-                      print("Publicando comentarios en el PR...")
+                      print("Se encontraron violaciones a las reglas. Publicando en el PR...")
                       subprocess.run(["gh", "pr", "comment", pr_number, "-F", "comment.md"])
                   else:
-                      print("El código cumple con todas las reglas. No se requieren comentarios.")
+                      print("El código cumple con todas las reglas de los globs. LGTM.")
           
           except Exception as e:
               print(f"Error al comunicarse con Gemini o GitHub: {e}")
