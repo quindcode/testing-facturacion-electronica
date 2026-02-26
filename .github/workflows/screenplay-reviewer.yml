@@ -34,16 +34,14 @@ jobs:
           api_key = os.environ.get("GEMINI_API_KEY")
           pr_number = os.environ.get("PR_NUMBER")
           
-          # 1. Leer reglas de Cursor directamente en Python (A prueba de fallos)
+          # Leer reglas de Cursor directamente en Python
           cursor_rules = ""
           mdc_files = glob.glob(".cursor/rules/*.mdc")
           for filepath in mdc_files:
               with open(filepath, "r", encoding="utf-8") as rf:
                   cursor_rules += f"\n--- REGLA: {filepath} ---\n{rf.read()}\n"
           
-          print(f"🛠️ DEBUG: Se cargaron {len(mdc_files)} archivos de reglas .mdc.")
-          
-          # 2. Leer el diff
+          # Leer el diff
           with open("pr_diff.txt", "r", encoding="utf-8") as f:
               pr_diff = f.read()
           
@@ -51,34 +49,29 @@ jobs:
               print("No hay cambios en el código para revisar.")
               exit(0)
           
-          # 3. Extraer los archivos completos para contexto real
+          # Extraer los archivos completos para contexto real
           result = subprocess.run(["gh", "pr", "view", pr_number, "--json", "files", "--jq", ".files[].path"], capture_output=True, text=True)
           changed_files = [f for f in result.stdout.splitlines() if f.endswith(".java") or f.endswith(".md") or f.endswith(".feature")]
-          
-          print(f"🛠️ DEBUG: Analizando {len(changed_files)} archivos modificados en este PR: {changed_files}")
           
           archivos_completos = ""
           for f_path in changed_files:
               if os.path.exists(f_path):
                   with open(f_path, "r", encoding="utf-8") as file:
-                      archivos_completos += f"\n\n==== RUTA DEL ARCHIVO: {f_path} ====\n```\n{file.read()}\n```\n"
+                      archivos_completos += f"\n\n==== RUTA DEL ARCHIVO: {f_path} ====\n```java\n{file.read()}\n```\n"
           
-          # 4. Prompt Dinámico Extremo
+          # Prompt Dinámico con FORMATO ESTRICTO
           prompt = f"""
           Eres un Arquitecto de Pruebas Automatizadas (Serenity BDD/Screenplay) implacable y meticuloso. Tu misión es auditar el código de este Pull Request.
           
           PARTE A: REGLAS ESPECÍFICAS DE CARPETA (.mdc)
-          Lee estos archivos de configuración. Si la ruta de un archivo modificado coincide con el `globs` de una regla, DEBES juzgar el archivo asumiendo ese `# Rol` y aplicando esas reglas al pie de la letra.
           <cursor_rules>
           {cursor_rules}
           </cursor_rules>
           
-          PARTE B: MEJORES PRÁCTICAS GENERALES (NO NEGOCIABLES)
-          Además de las reglas anteriores, debes penalizar severamente:
-          1. Logs en Producción: Uso de `System.out.println` o `e.printStackTrace()`. Exige el uso de un Logger (SLF4J/Logback).
+          PARTE B: MEJORES PRÁCTICAS GENERALES
+          1. Logs en Producción: Prohibido `System.out.println` o `e.printStackTrace()`. Exige SLF4J/Logback.
           2. Bloques Catch vacíos o malos manejos de excepciones.
-          3. Nombres de variables incomprensibles o violaciones de Clean Code.
-          4. Malos olores en archivos .feature (escenarios sin sentido, pasos ambiguos).
+          3. Violaciones evidentes de Clean Code y principios SOLID.
           
           ARCHIVOS A AUDITAR (CÓDIGO COMPLETO):
           <archivos>
@@ -90,16 +83,34 @@ jobs:
           {pr_diff}
           </diff>
           
-          INSTRUCCIONES DE RESPUESTA:
-          - Cruza el código de <archivos> con las reglas que correspondan en <cursor_rules> (basado en la ruta) y con la PARTE B.
-          - Si encuentras CUALQUIER error, escribe un comentario severo pero formativo en Markdown, listando el archivo, el error detectado y cómo solucionarlo.
-          - Responde "LGTM" ÚNICAMENTE si el código es absolutamente perfecto en arquitectura y limpieza.
+          INSTRUCCIONES DE RESPUESTA Y FORMATO DE SALIDA:
+          Tu respuesta será publicada directamente en GitHub. DEBE verse impecable, profesional y altamente técnica. No incluyas saludos, despedidas, ni texto fuera de la plantilla.
+          
+          Si encuentras violaciones, USA ESTRICTAMENTE esta plantilla Markdown:
+          
+          ## 📊 Resumen de la Auditoría
+          [Un párrafo técnico y ejecutivo resumiendo el estado general del PR y el impacto de los errores encontrados]
+          
+          ## 🛑 Hallazgos Detallados
+          
+          [Para cada archivo con errores, repite esta estructura exacta:]
+          ### 📁 `{Ruta exacta del archivo}`
+          - **Gravedad:** [🔴 Crítica | 🟠 Advertencia | 🔵 Sugerencia Menor]
+          - **Regla Violada:** [Menciona el archivo .mdc exacto, ej. `screenplay-kafka-tasks.mdc`, o el principio general]
+          - **Diagnóstico Técnico:** [Explicación concisa y técnica del porqué está mal]
+          - **Refactorización Propuesta:**
+            ```java
+            // Escribe aquí el código corregido, listo para copiar y pegar, aplicando Screenplay y Lombok correctamente.
+            ```
+          ---
+          
+          Si el código de los archivos modificados es absolutamente perfecto, responde ÚNICAMENTE con la palabra "LGTM" sin ningún otro caracter.
           """
           
           # Llamada a Gemini
           payload = {
               "systemInstruction": {
-                  "parts": [{"text": "Eres un auditor de código senior, crítico y detallista. No perdonas errores de Clean Code ni violaciones a Screenplay."}]
+                  "parts": [{"text": "Eres un auditor de código senior, crítico y detallista. Tu comunicación es formal, directa y estructurada."}]
               },
               "contents": [{"parts": [{"text": prompt}]}],
               "generationConfig": {"temperature": 0.1}
@@ -115,9 +126,9 @@ jobs:
           
                   if ai_comment != "LGTM":
                       with open("comment.md", "w", encoding="utf-8") as f:
-                          f.write("### 🚨 Auditoría de Código y Arquitectura (Gemini AI)\n\n" + ai_comment)
+                          f.write("### 🤖 Auditoría de Código y Arquitectura (Gemini AI)\n\n" + ai_comment)
           
-                      print("¡Se detectaron malas prácticas! Publicando comentario en GitHub...")
+                      print("¡Se detectaron malas prácticas! Publicando comentario formateado en GitHub...")
                       subprocess.run(["gh", "pr", "comment", pr_number, "-F", "comment.md"])
                   else:
                       print("El código es perfecto. LGTM.")
