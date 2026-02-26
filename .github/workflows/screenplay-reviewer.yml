@@ -34,14 +34,14 @@ jobs:
           api_key = os.environ.get("GEMINI_API_KEY")
           pr_number = os.environ.get("PR_NUMBER")
           
-          # Leer reglas de Cursor directamente en Python
+
           cursor_rules = ""
           mdc_files = glob.glob(".cursor/rules/*.mdc")
           for filepath in mdc_files:
               with open(filepath, "r", encoding="utf-8") as rf:
                   cursor_rules += f"\n--- REGLA: {filepath} ---\n{rf.read()}\n"
           
-          # Leer el diff
+
           with open("pr_diff.txt", "r", encoding="utf-8") as f:
               pr_diff = f.read()
           
@@ -49,7 +49,7 @@ jobs:
               print("No hay cambios en el código para revisar.")
               exit(0)
           
-          # Extraer los archivos completos para contexto real
+  
           result = subprocess.run(["gh", "pr", "view", pr_number, "--json", "files", "--jq", ".files[].path"], capture_output=True, text=True)
           changed_files = [f for f in result.stdout.splitlines() if f.endswith(".java") or f.endswith(".md") or f.endswith(".feature")]
           
@@ -59,7 +59,7 @@ jobs:
                   with open(f_path, "r", encoding="utf-8") as file:
                       archivos_completos += f"\n\n==== RUTA DEL ARCHIVO: {f_path} ====\n```java\n{file.read()}\n```\n"
           
-          # Prompt Dinámico con FORMATO ESTRICTO (Corregido)
+   
           prompt = f"""
           Eres un Arquitecto de Pruebas Automatizadas (Serenity BDD/Screenplay) implacable y meticuloso. Tu misión es auditar el código de este Pull Request.
           
@@ -88,10 +88,9 @@ jobs:
           
           Si encuentras violaciones, USA ESTRICTAMENTE esta plantilla Markdown:
           
-          ## 📊 Resumen de la Auditoría
+
           [Un párrafo técnico y ejecutivo resumiendo el estado general del PR y el impacto de los errores encontrados]
-          
-          ## 🛑 Hallazgos Detallados
+
           
           [Para cada archivo con errores, repite esta estructura exacta:]
           ### 📁 `[Ruta exacta del archivo]`
@@ -107,7 +106,7 @@ jobs:
           Si el código de los archivos modificados es absolutamente perfecto, responde ÚNICAMENTE con la palabra "LGTM" sin ningún otro caracter.
           """
           
-          # Llamada a Gemini
+
           payload = {
               "systemInstruction": {
                   "parts": [{"text": "Eres un auditor de código senior, crítico y detallista. Tu comunicación es formal, directa y estructurada."}]
