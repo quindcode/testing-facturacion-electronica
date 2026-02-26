@@ -59,7 +59,7 @@ jobs:
                   with open(f_path, "r", encoding="utf-8") as file:
                       archivos_completos += f"\n\n==== RUTA DEL ARCHIVO: {f_path} ====\n```java\n{file.read()}\n```\n"
           
-          # Prompt Dinámico con FORMATO ESTRICTO
+          # Prompt Dinámico con FORMATO ESTRICTO (Corregido)
           prompt = f"""
           Eres un Arquitecto de Pruebas Automatizadas (Serenity BDD/Screenplay) implacable y meticuloso. Tu misión es auditar el código de este Pull Request.
           
@@ -94,7 +94,7 @@ jobs:
           ## 🛑 Hallazgos Detallados
           
           [Para cada archivo con errores, repite esta estructura exacta:]
-          ### 📁 `{Ruta exacta del archivo}`
+          ### 📁 `[Ruta exacta del archivo]`
           - **Gravedad:** [🔴 Crítica | 🟠 Advertencia | 🔵 Sugerencia Menor]
           - **Regla Violada:** [Menciona el archivo .mdc exacto, ej. `screenplay-kafka-tasks.mdc`, o el principio general]
           - **Diagnóstico Técnico:** [Explicación concisa y técnica del porqué está mal]
